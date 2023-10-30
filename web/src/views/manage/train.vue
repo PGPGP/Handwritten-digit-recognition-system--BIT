@@ -1,29 +1,39 @@
 <template>
   <div>
-    <h1>训练模型</h1>
-    <h2>数据集</h2>
+    <div class="h1" :style="styleOfH1">
+      <h1>训练模型</h1>
+    </div>
+    <div class="h2" :style="styleOfH2">
+      <h2>数据集</h2>
+    </div>
+    <div class="choose" :style="styleOfChoose">
     <span>可选数据集</span>
-    <el-select v-model="value" placeholder="请选择">
-      <el-option-group
-        v-for="group in options"
-        :key="group.label"
-        :label="group.label">
-        <el-option
-          v-for="item in group.options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value">
-        </el-option>
-      </el-option-group>
-    </el-select>
-    <span><br><br>训练集：测试集</span>
+      <el-select v-model="value" placeholder="请选择">
+        <el-option-group
+          v-for="group in options"
+          :key="group.label"
+          :label="group.label">
+          <el-option
+            v-for="item in group.options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-option-group>
+      </el-select>
+    </div>
+    <div class="train" :style="stylrOfTrain">
+      <span><br><br>训练集：测试集</span>
+    </div>
     <el-slider
       v-model="ratioValue"
       show-input>
     </el-slider>
     <br>
     <br><br><br>
-    <h2>超参数</h2>
+    <div class="h2" :style="styleOfH2">
+      <h2>超参数</h2>
+    </div>
     <span>epoch
     <el-input v-model="input_epoch" placeholder="请输入内容"></el-input></span>
     <span><br>batch_size
@@ -86,7 +96,21 @@ export default {
         input_lr: '',
         trainFlag: false,
         src1:'',
-        src2:''
+        src2:'',
+        styleOfH1: {
+          color: 'blue',
+          fontSize: '13px',
+          marginLeft: '10px'
+        },
+        styleOfH2:{
+          marginLeft: '10px'
+        },
+        styleOfChoose:{
+          marginLeft: '50px'
+        },
+        stylrOfTrain:{
+          marginLeft: '50px'
+        }
       }
     },
     methods:{
