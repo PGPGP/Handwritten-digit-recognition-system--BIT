@@ -34,16 +34,25 @@
     <div class="h2" :style="styleOfH2">
       <h2>超参数</h2>
     </div>
-    <span>epoch
-    <el-input v-model="input_epoch" placeholder="请输入内容"></el-input></span>
-    <span><br>batch_size
-    <el-input v-model="input_batch" placeholder="请输入内容"></el-input></span>
-    <span><br>learning_rate
-    <el-input v-model="input_lr" placeholder="请输入内容"></el-input></span>
-    <el-button v-if="trainFlag === false" type="primary" @click="train_start">开始训练<i class="el-icon-upload el-icon--right"></i></el-button>
-    <el-button v-else type="primary" :loading="true">训练中</el-button>
-    <span><br>训练结果</span>
-    <div class="block">
+    <div class="para" :style="styleOfPara">
+      <span>epoch
+        <el-input v-model="input_epoch" placeholder="请输入内容" style="width: 20%"></el-input>
+      </span>
+      <span><br>batch_size
+        <el-input v-model="input_batch" placeholder="请输入内容" style="width: 20%"></el-input>
+      </span>
+      <span><br>learning_rate
+        <el-input v-model="input_lr" placeholder="请输入内容" style="width: 20%"></el-input>
+      </span>
+    </div>
+    <div class="start" :style="styleOfStart">
+      <el-button v-if="trainFlag === false" type="primary" @click="train_start">开始训练<i class="el-icon-upload el-icon--right"></i></el-button>
+      <el-button v-else type="primary" :loading="true">训练中</el-button>
+    </div>
+    <div class="h2" :style="styleOfH2">
+      <h2><br>训练结果</h2>
+    </div>
+    <div class="block" style="margin-left: 40%">
       <span class="demonstration">图1</span>
       <el-image :src="src1">
         <div slot="placeholder" class="image-slot">
@@ -110,6 +119,12 @@ export default {
         },
         stylrOfTrain:{
           marginLeft: '50px'
+        },
+        styleOfPara:{
+          marginLeft: '50px'
+        },
+        styleOfStart:{
+          marginLeft: '40%'
         }
       }
     },
