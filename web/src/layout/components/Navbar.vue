@@ -19,7 +19,7 @@
           <a target="_blank">
             <el-dropdown-item>个人信息</el-dropdown-item>
           </a>
-          <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
+          <a target="_blank" href="https://github.com/PGPGP/Handwritten-digit-recognition-system--BIT">
             <el-dropdown-item>帮助</el-dropdown-item>
           </a>
           <el-dropdown-item divided @click.native="logout">
