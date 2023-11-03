@@ -40,6 +40,61 @@
       </el-select>
       <el-button type="primary" icon="fa fa-upload">应用</el-button>
     </div>
+    <div class="table_button" style="margin-left: 40%">
+      <el-button @click="resetDateFilter">清除日期过滤器</el-button>
+      <el-button @click="clearFilter">清除所有过滤器</el-button>
+    </div>
+    <div class="table" :style="styleOfTable">
+      <el-table
+        ref="filterTable"
+        :data="tableData"
+        style="width: 100%"
+        max-height="250">
+        <el-table-column
+          prop="model"
+          label="模型名称"
+          width="180"
+          fixed>
+        </el-table-column>
+        <el-table-column
+          prop="dataset"
+          label="数据集"
+          width="180"
+          fixed>
+        </el-table-column>
+        <el-table-column
+          prop="name"
+          label="创建人"
+          width="180"
+          fixed>
+        </el-table-column>
+        <el-table-column
+          prop="date"
+          label="创建日期"
+          sortable
+          width="180"
+          column-key="date"
+          :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
+          :filter-method="filterHandler"
+          fixed
+        >
+        </el-table-column>
+        <el-table-column
+          prop="tag"
+          label="状态"
+          width="100"
+          :filters="[{ text: '使用中', value: '使用中' }, { text: '禁用', value: '禁用' }]"
+          :filter-method="filterTag"
+          filter-placement="bottom-end"
+          fixed>
+          <template slot-scope="scope">
+            <el-tag
+              :type="scope.row.tag === '使用中' ? 'success' : 'danger'"
+              disable-transitions>{{scope.row.tag}}</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
   </div>
 </template>
 
@@ -97,10 +152,55 @@ export default {
             value: 'Testtext5',
             label: '测试文本5'
           }]
-        }]
+        }],
+        tableData: [{
+          model: '默认模型',
+          dataset: 'Minist',
+          date: '2016-05-02',
+          name: '测试文本',
+          tag: '使用中'
+        }, {
+          model: '测试文本',
+          dataset: '测试文本',
+          date: '2016-05-04',
+          name: '测试文本',
+          tag: '禁用'
+        }, {
+          model: '测试文本',
+          dataset: '测试文本',
+          date: '2016-05-01',
+          name: '测试文本',
+          tag: '禁用'
+        }, {
+          model: '测试文本',
+          dataset: '测试文本',
+          date: '2016-05-03',
+          name: '测试文本',
+          tag: '禁用'
+        }],
+        styleOfTable:{
+          marginLeft:'20%'
+        }
     }
-  }
-
+  },
+  methods: {
+      resetDateFilter() {
+        this.$refs.filterTable.clearFilter('date');
+      },
+      clearFilter() {
+        this.$refs.filterTable.clearFilter();
+      },
+      formatter(row, column) {
+        return row.address;
+      },
+      filterTag(value, row) {
+        return row.tag === value;
+      },
+      filterHandler(value, row, column) {
+        const property = column['property'];
+        return row[property] === value;
+      }
+    }
 }
 </script>
 
