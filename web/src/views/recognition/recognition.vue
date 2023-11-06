@@ -1,7 +1,9 @@
 <template>
   <div class="app-container">
     <div class="h1" :style="styleOfH1">
-      识别手写数字
+      <h1>
+        识别手写数字
+      </h1>
     </div>
     <div class="image" :style="styleOfImage">
       <div style="margin-left: 40%;margin-top: 25%;">
@@ -29,7 +31,9 @@
       </div> 
     </div>
     <div class="h1" :style="styleOfH1">
-      识别结果
+      <h1>
+        识别结果
+      </h1>
     </div>
     <div>
       <div class="image2" :style="styleOfImage2">
