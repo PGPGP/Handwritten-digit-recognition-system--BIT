@@ -23,12 +23,14 @@
       </el-select>
     </div>
     <div class="train" :style="stylrOfTrain">
-      <span><br><br>训练集：测试集</span>
+      <span><br><br>(训练集:测试集)%</span>
     </div>
-    <el-slider
-      v-model="ratioValue"
-      show-input>
-    </el-slider>
+    <div class="ratio" style="margin-left: 5%;margin-right: 5%;">
+      <el-slider
+        v-model="ratioValue"
+        show-input>
+      </el-slider>
+    </div>
     <br>
     <br><br><br>
     <div class="h2" :style="styleOfH2">
@@ -70,6 +72,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   data() {
       return {
@@ -109,19 +112,19 @@ export default {
         styleOfH1: {
           color: 'blue',
           fontSize: '13px',
-          marginLeft: '10px'
+          marginLeft: '1%'
         },
         styleOfH2:{
-          marginLeft: '10px'
+          marginLeft: '1%'
         },
         styleOfChoose:{
-          marginLeft: '50px'
+          marginLeft: '5%'
         },
         stylrOfTrain:{
-          marginLeft: '50px'
+          marginLeft: '5%'
         },
         styleOfPara:{
-          marginLeft: '50px'
+          marginLeft: '5%'
         },
         styleOfStart:{
           marginLeft: '40%'
@@ -137,6 +140,16 @@ export default {
         
         this.trainFlag = !this.trainFlag
       }
+    },
+    created:function(){
+      console.log('训练被创建')
+      axios.post("http://localhost:8080/request/dataset").then(function(response){
+        console.log('请求表单数据成功'+response)
+        this.options = response.options
+      })
+    },
+    mounted:function(){
+      console.log('训练被挂载')
     }
 }
 </script>
