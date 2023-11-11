@@ -143,10 +143,10 @@ export default {
     },
     created:function(){
       console.log('训练被创建')
-      axios.post("http://localhost:8080/request/dataset").then(function(response){
-        console.log('请求表单数据成功'+response)
-        this.options = response.options
-      })
+      // axios.post("http://localhost:8080/request/dataset").then(function(response){
+      //   console.log('请求表单数据成功'+response)
+      //   this.options = response.options
+      // })
     },
     mounted:function(){
       console.log('训练被挂载')
