@@ -26,17 +26,12 @@
     <div class="choose" :style="styleOfChoose">
       可供选择的模型：
       <el-select v-model="value" placeholder="请选择">
-        <el-option-group
-          v-for="group in options"
-          :key="group.label"
-          :label="group.label">
-          <el-option
-            v-for="item in group.options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-option-group>
+        <el-option
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value">
+        </el-option>
       </el-select>
       <el-button type="primary" icon="fa fa-upload">应用</el-button>
     </div>
@@ -99,6 +94,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   data() {
     return{
@@ -129,29 +125,17 @@ export default {
         marginLeft:'7%'
       },
       options: [{
-          label: '常用数据集',
-          options: [{
-            value: 'Minist',
-            label: '默认数据集'
-          }, {
-            value: 'Testtext1',
-            label: '测试文本1'
-          }]
+          value: 'Testtext2',
+          label: '测试文本2'
         }, {
-          label: '数据集',
-          options: [{
-            value: 'Testtext2',
-            label: '测试文本2'
-          }, {
-            value: 'Testtext3',
-            label: '测试文本3'
-          }, {
-            value: 'Testtext4',
-            label: '测试文本4'
-          }, {
-            value: 'Testtext5',
-            label: '测试文本5'
-          }]
+          value: 'Testtext3',
+          label: '测试文本3'
+        }, {
+          value: 'Testtext4',
+          label: '测试文本4'
+        }, {
+          value: 'Testtext5',
+          label: '测试文本5'
         }],
         tableData: [{
           model: '默认模型',
@@ -200,6 +184,16 @@ export default {
         const property = column['property'];
         return row[property] === value;
       }
+    },
+    created:function(){
+      console.log('应用被创建')
+      axios.post("http://localhost:8080/request/model").then(function(response){
+        console.log('请求表单数据成功'+response)
+        //this.options = response.options
+      })
+    },
+    mounted:function(){
+      console.log('应用被挂载')
     }
 }
 </script>
