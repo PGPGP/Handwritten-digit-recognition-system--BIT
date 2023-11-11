@@ -190,6 +190,9 @@ export default {
       axios.post("http://localhost:8080/request/model").then(function(response){
         console.log('请求表单数据成功'+response)
         //this.options = response.options
+        for(const i in response.models){
+          this.$set(this.options,value,response.models[i].model_id,label,response.models[i].model_name)
+        }
       })
     },
     mounted:function(){
