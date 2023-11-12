@@ -30,7 +30,7 @@
           v-for="item in options"
           :key="item.model_id"
           :label="item.model_name"
-          :value="item.model_name">
+          :value="item.model_id">
         </el-option>
       </el-select>
       <el-button type="primary" icon="fa fa-upload" @click="changeStatus">应用</el-button>
@@ -174,17 +174,32 @@ export default {
         return row.is_active === value;
       },
       changeStatus() {
-        for(const i in this.tableData){
-          this.tableData[i].is_active = 0
-        }
-        for(const i in this.tableData){
-          if(this.tableData[i].model_name == this.value){
-            this.tableData[i].is_active = 1
-            this.$refs.input_model.value = this.value
-            this.$refs.input_time.value = this.tableData[i].model_activate_date
-            break
+        // for(const i in this.options){
+        //   if(this.options[i].model_name == this.value){
+        //     id = this.
+        //   }
+        // }
+        const formData = new FormData()
+        formData.append('model_id', this.value)
+        console.log(this.value)
+        axios.post("http://localhost:8080/manage/switch_model",formData,{headers:{'Content-Type':'multipart/form-data'}}).then((response) => {
+          if(response.data.result == "successful"){
+            for(const i in this.tableData){
+              this.tableData[i].is_active = 0
+            }
+            for(const i in this.tableData){
+              if(this.tableData[i].model_id == this.value){
+                this.tableData[i].is_active = 1
+                this.$refs.input_model.value = this.tableData[i].model_name
+                this.$refs.input_time.value = this.tableData[i].model_activate_date
+                break
+              }
+            }
           }
-        }
+          else{
+            alert('更换失败')
+          }
+        })
       }
     },
     created:function(){
@@ -196,6 +211,14 @@ export default {
           this.options = response.data.models
           this.tableData = response.data.models
           console.log(response)
+        }
+        for(const i in this.tableData){
+          if(this.tableData[i].is_active == 1){
+            console.log(this.tableData[i])//尽管成功匹配了，值并没有得到修改，需要等待讨论
+            this.$refs.input_model.value = this.tableData[i].model_name
+            this.$refs.input_time.value = this.tableData[i].model_activate_date
+            break
+          }
         }
         // for(const i in response.data.models){
         //   this.$set(this.options[i],{value:response.data.models[i].model_id,label:response.data.models[i].model_name})
