@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-text">name: {{ name }}</div>
+    <div :style="styleOfWel">欢迎使用手写数字识别管理系统</div>
   </div>
 </template>
 
@@ -13,6 +14,17 @@ export default {
     ...mapGetters([
       'name'
     ])
+  },
+  data(){
+    return{
+      styleOfWel:{
+        color: 'silver',
+        fontSize: '50px',
+        textAlign: 'center',
+        marginTop: '10%',
+        opacity: '0.5'
+      }
+    }
   }
 }
 </script>
