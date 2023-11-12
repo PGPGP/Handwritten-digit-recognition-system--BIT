@@ -13,12 +13,12 @@
       <div class="time" :style="styleOfTime">
         <br>
         启用时间：
-        <el-input v-model="input_time" placeholder="暂无使用记录" style="width:20%" :disabled="true"></el-input>
+        <el-input ref="input_time" v-model="input_time" placeholder="暂无使用记录" style="width:30%" :disabled="true"></el-input>
       </div>
       <div class="span" :style="styleOfSpan">
         <br>
         使用时间：
-        <el-input v-model="input_span" placeholder="暂无使用记录" style="width:20%" :disabled="true"></el-input>
+        <el-input ref="input_span" v-model="input_span" placeholder="暂无使用记录" style="width:20%" :disabled="true"></el-input>
         天
       </div>
     </div>
@@ -46,46 +46,47 @@
         style="width: 100%"
         max-height="250">
         <el-table-column
-          prop="model"
+          prop="model_name"
           label="模型名称"
           width="180"
           fixed>
         </el-table-column>
         <el-table-column
-          prop="dataset"
+          prop="dataset_id"
           label="数据集"
           width="180"
           fixed>
         </el-table-column>
         <el-table-column
-          prop="name"
+          prop="user_id"
           label="创建人"
           width="180"
           fixed>
         </el-table-column>
         <el-table-column
-          prop="date"
+          prop="model_create_date"
           label="创建日期"
           sortable
           width="180"
           column-key="date"
-          :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
-          :filter-method="filterHandler"
           fixed
         >
         </el-table-column>
         <el-table-column
-          prop="tag"
+          prop="is_active"
           label="状态"
           width="100"
-          :filters="[{ text: '使用中', value: '使用中' }, { text: '禁用', value: '禁用' }]"
+          :filters="[{ text: '使用中', value: 1 }, { text: '禁用', value: 0 }]"
           :filter-method="filterTag"
           filter-placement="bottom-end"
           fixed>
           <template slot-scope="scope">
-            <el-tag
-              :type="scope.row.tag === '使用中' ? 'success' : 'danger'"
-              disable-transitions>{{scope.row.tag}}</el-tag>
+            <el-tag v-if="scope.row.is_active === 1"
+              :type="'success'"
+              disable-transitions>使用中</el-tag>
+            <el-tag v-else
+            :type="'danger'"
+            disable-transitions>禁用</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -170,20 +171,17 @@ export default {
         return row.address;
       },
       filterTag(value, row) {
-        return row.tag === value;
-      },
-      filterHandler(value, row, column) {
-        const property = column['property'];
-        return row[property] === value;
+        return row.is_active === value;
       },
       changeStatus() {
         for(const i in this.tableData){
-          this.tableData[i].tag = '禁用'
+          this.tableData[i].is_active = 0
         }
         for(const i in this.tableData){
-          if(this.tableData[i].dataset == this.value){
-            this.tableData[i].tag = '使用中'
+          if(this.tableData[i].model_name == this.value){
+            this.tableData[i].is_active = 1
             this.$refs.input_model.value = this.value
+            this.$refs.input_time.value = this.tableData[i].model_activate_date
             break
           }
         }
@@ -196,6 +194,7 @@ export default {
         //this.options = response.options
         if(response != null){
           this.options = response.data.models
+          this.tableData = response.data.models
           console.log(response)
         }
         // for(const i in response.data.models){
