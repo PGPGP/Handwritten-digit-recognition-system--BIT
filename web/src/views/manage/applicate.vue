@@ -8,7 +8,7 @@
     <div class="info" :style="styleOfInfo">
       <div class="model" :style="styleOfModel">
         系统当前使用模型为：
-        <el-input v-model="input_model" placeholder="暂无使用模型" style="width:20%" :disabled="true"></el-input>
+        <el-input ref="input_model" v-model="input_model" placeholder="暂无使用模型" style="width:20%" :disabled="true"></el-input>
       </div>
       <div class="time" :style="styleOfTime">
         <br>
@@ -28,12 +28,12 @@
       <el-select v-model="value" placeholder="请选择">
         <el-option
           v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value">
+          :key="item.model_id"
+          :label="item.model_name"
+          :value="item.model_name">
         </el-option>
       </el-select>
-      <el-button type="primary" icon="fa fa-upload">应用</el-button>
+      <el-button type="primary" icon="fa fa-upload" @click="changeStatus">应用</el-button>
     </div>
     <div class="table_button" style="margin-left: 40%">
       <el-button @click="resetDateFilter">清除日期过滤器</el-button>
@@ -125,18 +125,10 @@ export default {
         marginLeft:'7%'
       },
       options: [{
-          value: 'Testtext2',
-          label: '测试文本2'
-        }, {
-          value: 'Testtext3',
-          label: '测试文本3'
-        }, {
-          value: 'Testtext4',
-          label: '测试文本4'
-        }, {
-          value: 'Testtext5',
-          label: '测试文本5'
+          model_id: 'Minist',
+          model_name: '默认模型'
         }],
+        value: '',
         tableData: [{
           model: '默认模型',
           dataset: 'Minist',
@@ -183,16 +175,32 @@ export default {
       filterHandler(value, row, column) {
         const property = column['property'];
         return row[property] === value;
+      },
+      changeStatus() {
+        for(const i in this.tableData){
+          this.tableData[i].tag = '禁用'
+        }
+        for(const i in this.tableData){
+          if(this.tableData[i].dataset == this.value){
+            this.tableData[i].tag = '使用中'
+            this.$refs.input_model.value = this.value
+            break
+          }
+        }
       }
     },
     created:function(){
       console.log('应用被创建')
-      axios.post("http://localhost:8080/request/model").then(function(response){
+      axios.post("http://localhost:8080/request/model").then((response) => {
         console.log('请求表单数据成功'+response)
         //this.options = response.options
-        for(const i in response.models){
-          this.$set(this.options,value,response.models[i].model_id,label,response.models[i].model_name)
+        if(response != null){
+          this.options = response.data.models
+          console.log(response)
         }
+        // for(const i in response.data.models){
+        //   this.$set(this.options[i],{value:response.data.models[i].model_id,label:response.data.models[i].model_name})
+        // }
       })
     },
     mounted:function(){
