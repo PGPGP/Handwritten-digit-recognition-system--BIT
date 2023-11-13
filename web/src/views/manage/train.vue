@@ -9,17 +9,12 @@
     <div class="choose" :style="styleOfChoose">
     <span>可选数据集</span>
       <el-select v-model="value" placeholder="请选择">
-        <el-option-group
-          v-for="group in options"
-          :key="group.label"
-          :label="group.label">
-          <el-option
-            v-for="item in group.options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-option-group>
+        <el-option
+          v-for="item in options"
+          :key="item.dataset_id"
+          :label="item.dataset_name"
+          :value="item.dataset_name">
+        </el-option>
       </el-select>
     </div>
     <div class="train" :style="stylrOfTrain">
@@ -73,33 +68,16 @@
 
 <script>
 import axios from 'axios'
+import { socket } from './websocket'
 export default {
   data() {
-      return {
+      return { 
         options: [{
-          label: '常用数据集',
-          options: [{
-            value: 'Minist',
-            label: '默认数据集'
-          }, {
-            value: 'Testtext1',
-            label: '测试文本1'
-          }]
+          value: 'Minist',
+          label: '默认数据集'
         }, {
-          label: '数据集',
-          options: [{
-            value: 'Testtext2',
-            label: '测试文本2'
-          }, {
-            value: 'Testtext3',
-            label: '测试文本3'
-          }, {
-            value: 'Testtext4',
-            label: '测试文本4'
-          }, {
-            value: 'Testtext5',
-            label: '测试文本5'
-          }]
+          value: 'Testtext1',
+          label: '测试文本1'
         }],
         value: '',
         ratioValue: 0,
@@ -128,25 +106,91 @@ export default {
         },
         styleOfStart:{
           marginLeft: '40%'
-        }
+        },
+        loading: true,
+        websocketCount: -1,
+        //查询条件
+        queryCondition: {
+          type: "message",
+        },
+        url: 'ws://localhost:8080/manage/train',
+        para:{
+          user_id: 1, //请求的用户id
+          type: 'start', //websocket请求的类型。在这个用例中，为"start"
+          tItem: {
+            model_name: '111', //待训练的模型名称
+            user_id: 2, //创建模型的用户id
+            dataset_id: 3, //数据集id
+            ratio: '', //训练集：测试集的比例
+            epoch: '', //训练超参数
+            batch_size: '', //训练超参数
+            learning_rate: '' //训练超参数
+          }
+        },
       }
     },
     methods:{
       train_start: function(){
-        
+        this.para.tItem.ratio = this.ratioValue
+        this.para.tItem.epoch = this.input_epoch
+        this.para.tItem.batch_size = this.input_batch
+        this.para.tItem.learning_rate = this.input_lr
+        socket.sendMsg(JSON.stringify(this.para))
         this.trainFlag = !this.trainFlag
       },
       train_over: function(){
         
         this.trainFlag = !this.trainFlag
+      },
+      init() {
+        socket.sendMsg(JSON.stringify(this.para))
+      },
+      websocketOnMessage(event) {
+        //初始化界面时，主动向后台发送一次消息，获取数据
+        //this.websocketCount += 1;
+        // if (this.websocketCount === 0) {
+        //   this.init();
+        // }
+        let info = JSON.parse(event.data)
+        switch (info.type) {//有待修改
+          case "heartbeat":
+            socket.websocketState = true
+            break
+          case "message":
+            this.loading = true;
+            this.$nextTick(() => {
+              this.consumeMessage(info)
+            })
+            break;
+          case "error":
+            this.loading = false;
+            break
+          default: 
+            alert('666')
+            console.log('未完成处理的消息')
+            break
+        }
+      },
+      consumeMessage(info) {
+        //拿到最新数据重新渲染界面
       }
     },
     created:function(){
       console.log('训练被创建')
-      // axios.post("http://localhost:8080/request/dataset").then(function(response){
-      //   console.log('请求表单数据成功'+response)
-      //   this.options = response.options
-      // })
+      axios.post("http://localhost:8080/request/dataset").then((response) => {
+        console.log('请求表单数据成功'+response)
+        console.log(response.data)
+        this.options = response.data.datasets
+      })
+      //初始化websocket对象
+      //window.location.host获取ip和端口，
+      //process.env.VUE_APP_WEBSOCKET_BASE_API获取请求前缀
+      socket.initWebSocket(
+        this.url
+      );// `ws:${window.location.host}${process.env.VUE_APP_WEBSOCKET_BASE_API}/notice/` +
+        //   userId
+      //绑定接收消息方法
+      socket.websocket.onmessage = this.websocketOnMessage
     },
     mounted:function(){
       console.log('训练被挂载')
