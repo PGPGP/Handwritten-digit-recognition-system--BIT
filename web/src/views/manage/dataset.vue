@@ -1,10 +1,10 @@
+
 <template>
 
   <div class="app-container">
 
     <p>现有数据集</p>
-    <!-- <div class="centered-table"> -->
-      <el-table
+      <el-table 
         v-loading="listLoading"
         :data="list"
         element-loading-text="Loading"
@@ -14,35 +14,35 @@
       >
 
         <el-table-column align="center" label="序号" width="100" >
-          <template slot-scope="scope">
-            {{ scope.$index }}
+          <template v-slot="scope">
+            {{ scope.row.dataset_id }}
           </template>
         </el-table-column>
         <el-table-column align="center" label="数据集名称" >
-          <template slot-scope="scope">
-            {{ scope.row.title }}
+          <template v-slot="scope">
+            {{ scope.row.dataset_name }}
           </template>
         </el-table-column>
         <el-table-column align="center" label="创建人ID" width="100">
-          <template slot-scope="scope">
-            <!-- {{ scope.row.title }} -->
+          <template v-slot="scope">
+            {{ scope.row.user_id }}
           </template>
         </el-table-column>
         <el-table-column label="数据量" w align="center" width="100">
-          <template slot-scope="scope">
-            <span>{{ scope.row.author }}</span>
+          <template v-slot="scope">
+            <span>{{ scope.row.image_num }}</span>
           </template>
         </el-table-column>
         <el-table-column label="创建日期"  align="center" >
-          <template slot-scope="scope">
-            {{ scope.row.pageviews }}
+          <template v-slot="scope">
+            {{ scope.row.dataset_create_date }}
           </template>
         </el-table-column>
         <el-table-column align="center" prop="created_at" label="操作" width="100">
-          <template>
+          <template v-slot="scope"> 
             <!-- <i class="el-icon-time" />
             <span>{{ scope.row.display_time }}</span> -->
-            <el-button style="font-size: 10px;padding: 5px 10px;" type="dashed" @click="onSubmit"><p style="font-size: 10px;color: rgb(15, 15, 15);">删除</p></el-button>
+            <el-button style="font-size: 10px;padding: 5px 10px;" type="dashed" @click="deletedataset(scope.row.dataset_id)"><p style="font-size: 10px;color: rgb(15, 15, 15);">删除</p></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -52,20 +52,6 @@
     <div class="app-container">
       <el-form ref="form" :model="form" label-width="120px">
 
-        <!-- <el-form-item label="选择数字图片">
-          <span>（规定图片必须为单个数字）</span>
-          <el-upload
-            action="D:\image"
-            :headers="{'Authorization': 'Bearer ' + authToken}" 
-            :show-file-list="false" 
-            :on-success="handleSuccess"
-          >
-            <el-button type="primary">上传图片</el-button>
-          </el-upload>
-          <img v-if="imageUrl" :src="imageUrl" alt="Uploaded Image" />
-         
-            <el-button type="primary" @click="uploadAndNavigate" >标注标签</el-button>
-        </el-form-item> -->
         
         <el-form-item>
           <el-upload
@@ -84,28 +70,13 @@
           </el-upload>
 
 
-          <!-- <div v-if="uploadingImages.length > 0 && currentImageIndex < uploadingImages.length">
-            <el-row type="flex" justify="center">
-              <el-col :span="6">
-                <div class="image-preview-container">
-                  <img :src="uploadingImages[currentImageIndex].image" alt="已上传的图片" class="preview-image" />
-                </div>
-              </el-col>
-              <el-col :span="6">
-                <div v-if="labeling">
-                  <el-button v-for="num in 10" :key="num" @click="selectLabel(num)">{{ num }}</el-button>
-                </div>
-              </el-col>
-            </el-row>
-          </div> -->
 
           <div v-if="uploadingImages.length > 0 && currentImageIndex < uploadingImages.length">
             <div class="image-preview-container">
-              <img :src="uploadingImages[currentImageIndex].image" alt="已上传的图片" class="preview-image" />
+              <img :src="getImageUrl()" alt="已上传的图片" class="preview-image" />
             </div>
             <div class="number-options">
               <div v-if="labeling">
-                <!-- <el-button v-for="num in 10" :key="num" @click="selectLabel(num)">{{ num }}</el-button> -->
                   <div
                     v-for="num in 10"
                     :key="num"
@@ -130,27 +101,7 @@
           <el-button type="primary" @click="startLabeling">打标签</el-button>
         </el-form-item>
 
-        <!--批量上传图片-->
-        <!-- <el-form-item label="图片" :required="form.postsType !== '2'">
-              <el-upload
-                action=""
-                list-type="picture-card"
-                :auto-upload="false"
-                :limit="9"
-                :before-upload="beforeUpload"
-                :on-change="handleChange"
-                :on-preview="handlePictureCardPreview"
-                :disabled="disabled"
-                :on-remove="handleRemove">
-                <i class="el-icon-plus"></i>
-              </el-upload>
-              <div style="font-size: 12px;color: #666;">
-                只能上传jpg/png文件,且不超过 2MB,最多上传 9 张图片
-              </div>
-              <el-dialog :visible.sync="dialogVisible">
-                <img width="100%" :src="dialogImageUrl" alt="">
-              </el-dialog>
-          </el-form-item> -->
+
 
         <el-form-item label="数据集命名">
           <el-input v-model="form.name" />
@@ -161,30 +112,6 @@
           <el-button @click="onCancel"><a style="color: rgb(15, 15, 15);">取消</a></el-button>
         </el-form-item>
 
-        <!-- <el-form-item>
-          <template>
-              <div class="image-preview-container">
-        
-                <div class="number-options">
-                  <div
-                    v-for="num in 10"
-                    :key="num"
-                    class="number-option"
-                    @click="selectNumber(num)"
-                    :class="{ selected: selectedNumber === num }"
-                  >
-                    {{ num }}
-                  </div>
-                </div>
-            
-                
-                <div class="buttons">
-                  <button @click="deleteImage" :disabled="!selectedImage">删除</button>
-                  <button @click="confirmSelection" :disabled="selectedNumber === null">确定</button>
-                </div>
-              </div>
-          </template>
-        </el-form-item> -->
 
       </el-form>
     </div>
@@ -194,31 +121,24 @@
 
 </template>
 
-<style>
-.centered-table {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* width: 40cm; */
-};
-
-</style>
 
 <script>
-import { getList } from '@/api/table'
+import axios from 'axios'
+ 
+
 
 export default {
 
-  // filters: {
-  //   statusFilter(status) {
-  //     const statusMap = {
-  //       published: 'success',
-  //       draft: 'gray',
-  //       deleted: 'danger'
-  //     }
-  //     return statusMap[status]
-  //   }
-  // },
+  watch: {
+        'form.instFilePics': {
+        handler(newVal) {
+            // 当 instFilePics 变化时，更新 uploadingImages
+            this.uploadingImages = newVal.map(file => ({ image: file.raw, label: null }));
+        },
+        deep: true,
+        },
+    },
+
   data() {
     return {
       form: {
@@ -233,7 +153,7 @@ export default {
         instFilePics:[],
 			  instFile:[]
       },
-      list: null,
+      list: [],
       listLoading: true,
       authToken: 'your-auth-token', 
       imageUrl: null,
@@ -246,22 +166,34 @@ export default {
       uploadingImages: [], // 保存上传的图片
       currentImageIndex: 0, // 当前处理的图片索引
       labeling: false, // 是否处于标签选择状态
-      selectedLabels: [] // 保存标签信息
-      
+      user_id:'0',
+      labellist:[],
+      imagelist:[]
 
     }
   },
   created() {
     this.fetchData()
   },
+
   mounted() {
-	//以下代码，有时候可能写法不同，可在控制台打印一层一层的找input，再给加webkitdirectory 属性
 	this.$refs.uploadFile.$children[0].$refs.input.webkitdirectory = true;
   },
 
   methods: {
-    handleSuccess(response, file) {
-    this.uploadingImages.push({ image: URL.createObjectURL(file.raw), label: null });
+    //此处应为数据集列表数据
+    fetchData() {
+      this.listLoading = true;
+      axios.post('http://localhost:8081/request/dataset')
+        .then(response => {
+          this.list = response.data.datasets;
+        })
+        .catch(error => {
+          console.error('Error fetching datasets:', error);
+        })
+        .finally(() => {
+          this.listLoading = false;
+        });
     },
 
     startLabeling() {
@@ -270,25 +202,14 @@ export default {
 
     selectLabel(label) {
       this.uploadingImages[this.currentImageIndex].label = label;
-      // this.currentImageIndex++;
-      // if (this.currentImageIndex < this.uploadingImages.length) {
-      //   this.labeling = true;
-      // } else {
-      //   this.labeling = false;
-      // }
     },
 
 
     confirmSelection() {
       if (this.uploadingImages[this.currentImageIndex] !=null && this.selectedNumber != null) {
-        // this.uploadingImages[this.currentImageIndex].label = this.selectedNumber;
         this.currentImageIndex++; // 显示下一张图片
         
-
-        // this.selectedImage = null;
         this.selectedNumber = null;
-
-        
 
         if (this.currentImageIndex < this.uploadingImages.length) {
           // 如果还有图片需要处理，将标签选择状态设置为 true
@@ -299,44 +220,85 @@ export default {
       }
     },
     
-
-
-
-
-    fetchData() {
-      this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
-        this.listLoading = false
-      })
-    },
     onSubmit() {
-      this.$message('submit!')
-    },
-    // handleSuccess(response, file) {
-    //   // 处理上传成功后的回调
-    //   this.imageUrl = URL.createObjectURL(file.raw);
-    // },
-    uploadAndNavigate() {
-      // 假设已上传图片信息保存在 uploadedImage 变量中
-      this.$router.push({ path: '/target-page', params: { uploadedImage: this.imageUrl } });
+        const formData = new FormData();
+
+        // 遍历 uploadingImages 数组，将每张图片和对应标签添加到 formData 中
+        for (let i = 0; i < this.uploadingImages.length; i++) {
+            const image = this.uploadingImages[i].image;
+            const label = this.uploadingImages[i].label;
+
+            formData.append('images', image);
+            formData.append('labels', label);
+        }
+
+        // 添加其他表单数据
+        formData.append('user_id', this.user_id);
+        formData.append('dataset_name', this.form.name);
+
+        this.$message('数据集已提交!');
+
+        // 发送 POST 请求
+        axios.post("http://localhost:8080/manage/upload_dataset", formData, {
+            headers: {
+            'Content-Type': 'multipart/form-data', // 设置请求头
+            }
+        }).then(response => {
+            console.log('请求表单数据成功' + response);
+            // 处理响应数据
+        }).catch(error => {
+            console.error(error);
+        });
+        },
+
+    deletedataset(dataset_id){
+      console.log('dataset_id:', dataset_id);
+      var dataset_idstring = String(dataset_id);
+      const formData = new FormData();
+      formData.append('user_id', this.user_id);
+      formData.append('dataset_id', dataset_idstring);
+      
+      this.$message('删除请求已提交!')
+
+      axios.post("http://localhost:8081/manage/delete_dataset",formData,{
+        headers: {
+            'Content-Type': 'multipart/form-data', // 设置请求头
+        }
+      }).then(response=>{
+        var resultWebItem = response.data;
+        var result = resultWebItem.result;
+        this.$message(result);
+        this.fetchData();
+        console.log('返回结果：'+result)
+        // console.log('请求表单数据成功'+response)
+        
+      })
+      .catch(error=>{
+        console.error(error);
+      });
+      
     },
 
 
     fileChang(file, fileList, name) {
-      // 更新 instFilePics
-      this.form.instFilePics = fileList;
-      
-      // 处理上传的文件夹中的图片
-      const images = [];
-      for (const file of fileList) {
-        if (file.raw) {
-          images.push({ image: URL.createObjectURL(file.raw), label: null });
-        }
-      }
-      this.uploadingImages = images;
-    },
+        // 更新 instFilePics
+        this.form.instFilePics = fileList;
 
+        // 处理上传的文件夹中的图片
+        const images = [];
+        const allowedTypes = ['image/jpeg', 'image/png']; // 可接受的图片类型
+
+        for (const file of fileList) {
+            if (file.raw && allowedTypes.includes(file.raw.type)) {
+            images.push({ image: file.raw, label: null });
+            } else {
+            // 处理非法文件类型，比如给用户提示
+            console.warn(`Invalid file type: ${file.raw.type}`);
+            }
+        }
+
+        this.uploadingImages = images;
+    },
 
 
     fileRemove(file, fileList, name) {
@@ -346,13 +308,10 @@ export default {
         this.selectedNumber = num;
         this.selectLabel(num);
       },
-    // 删除图片
-    // deleteImage() {
-    //   this.selectedImage = null;
-    // },
-    deleteImage() {
-      if (this.uploadingImages[this.currentImageIndex] !== null) {
-        this.uploadingImages.splice(this.currentImageIndex, 1);
+
+      deleteImage() {
+      if (this.form.instFilePics[this.currentImageIndex] !== null) {
+        this.form.instFilePics.splice(this.currentImageIndex, 1);
 
         if (this.currentImageIndex > 0) {
           this.currentImageIndex--; // 返回到上一张图片
@@ -360,8 +319,19 @@ export default {
         } else {
           this.labeling = false; // 如果已经是第一张图片，退出标签选择状态
         }
-      }else{
+      }
+      else{
         this.labeling = false;
+      }
+    },
+      getImageUrl() {
+      const currentImage = this.uploadingImages[this.currentImageIndex];
+      if (currentImage && currentImage.image instanceof Blob) {
+        // 如果 image 是 Blob 对象，使用 URL.createObjectURL 创建临时 URL
+        return URL.createObjectURL(currentImage.image);
+      } else {
+        // 如果 image 不是 Blob 对象，可能需要根据实际情况返回其他 URL 或空字符串
+        return '';
       }
     },
 
@@ -390,14 +360,6 @@ export default {
     justify-content: center;
   }
 
-  
-  /* .number-option {
-    cursor: pointer;
-    margin: 10px;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  } */
 
   .number-option {
   display: inline-block; /* 让按钮以行内块元素显示 */
@@ -422,25 +384,5 @@ export default {
     margin: 0 10px;
   }
 
-
-
-
-  /* .preview-image {
-  max-width: 100%;
-  max-height: 300px;
-  border: 1px solid #ccc;
-} */
-
-/* .el-row {
-  margin-bottom: 10px;
-}
-
-.el-col {
-  text-align: center;
-}
-
-.el-button {
-  margin: 5px;
-} */
 
 </style>
