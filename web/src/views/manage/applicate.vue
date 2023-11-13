@@ -8,7 +8,7 @@
     <div class="info" :style="styleOfInfo">
       <div class="model" :style="styleOfModel">
         系统当前使用模型为：
-        <el-input ref="input_model" v-model="input_model" placeholder="暂无使用模型" style="width:20%" :disabled="true"></el-input>
+        <el-input ref="input_model" v-model="input_model" placeholder="暂无使用模型" style="width:20%" :disabled="true">111</el-input>
       </div>
       <div class="time" :style="styleOfTime">
         <br>
@@ -157,7 +157,10 @@ export default {
         }],
         styleOfTable:{
           marginLeft:'20%'
-        }
+        },
+        input_model: '',
+        input_time: '',
+        input_span: ''
     }
   },
   methods: {
@@ -190,8 +193,8 @@ export default {
             for(const i in this.tableData){
               if(this.tableData[i].model_id == this.value){
                 this.tableData[i].is_active = 1
-                this.$refs.input_model.value = this.tableData[i].model_name
-                this.$refs.input_time.value = this.tableData[i].model_activate_date
+                this.input_model = this.tableData[i].model_name
+                this.input_time = this.tableData[i].model_activate_date
                 break
               }
             }
@@ -200,6 +203,16 @@ export default {
             alert('更换失败')
           }
         })
+      },
+      fresh(){
+        for(const i in this.tableData){
+          if(this.tableData[i].is_active == 1){
+            console.log('this.tableData[i]')//尽管成功匹配了，值并没有得到修改，需要等待讨论
+            this.input_model = this.tableData[i].model_name
+            this.input_time = this.tableData[i].model_activate_date
+            break
+          }
+        }
       }
     },
     created:function(){
@@ -212,17 +225,8 @@ export default {
           this.tableData = response.data.models
           console.log(response)
         }
-        for(const i in this.tableData){
-          if(this.tableData[i].is_active == 1){
-            console.log(this.tableData[i])//尽管成功匹配了，值并没有得到修改，需要等待讨论
-            this.$refs.input_model.value = this.tableData[i].model_name
-            this.$refs.input_time.value = this.tableData[i].model_activate_date
-            break
-          }
-        }
-        // for(const i in response.data.models){
-        //   this.$set(this.options[i],{value:response.data.models[i].model_id,label:response.data.models[i].model_name})
-        // }
+        
+        this.fresh()
       })
     },
     mounted:function(){
