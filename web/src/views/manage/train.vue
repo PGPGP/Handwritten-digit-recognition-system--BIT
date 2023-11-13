@@ -137,6 +137,62 @@ export default {
         this.para.tItem.learning_rate = this.input_lr
         socket.sendMsg(JSON.stringify(this.para))
         this.trainFlag = !this.trainFlag
+        const h = this.$createElement;
+        this.$msgbox({
+          title: '训练中',
+          message: h('p', null, [
+            h('span', null, '在训练结束前您不能对系统做任何其他的操作，除非您希望执行 '),
+            h('i', { style: 'color: teal' }, '强制中止'),
+            h('span', {
+              style:{
+
+              }
+            },
+            [h('el-progress', {
+                style: {
+                  cursor: 'pointer',
+                },
+                attrs: {
+                  // 添加属性
+                  text_inside: "true",
+                  stroke_width: "22",
+                  percentage: "80",
+                  id: "pro",
+                  status:"success",
+                },
+                on: {
+                  change: () => {
+                    _this.statu = '1'
+                  }
+                }
+              }, []), h('span', {
+                class: 'el-progress',
+              }, )]),
+          ]),
+          
+          confirmButtonText: '强制中止',
+          
+          beforeClose: (action, instance, done) => {
+            if (action === 'confirm') {
+              instance.confirmButtonLoading = true;
+              instance.confirmButtonText = '执行中止操作中...'
+              setTimeout(() => {
+                done();
+                setTimeout(() => {
+                  instance.confirmButtonLoading = false;
+                }, 300);
+              }, 3000);
+            } else {
+              done();
+            }
+          }
+        }).then(action => {
+          this.$message({
+            type: 'info',
+            message: '训练中断'//'action: ' + action
+          })
+          this.trainFlag = !this.trainFlag
+        })
       },
       train_over: function(){
         
