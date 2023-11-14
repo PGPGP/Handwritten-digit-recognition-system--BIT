@@ -139,6 +139,8 @@ export default {
         this.trainFlag = !this.trainFlag
         const h = this.$createElement;
         this.$msgbox({
+          showClose:false,
+          closeOnClickModal:false,
           title: '训练中',
           message: h('p', null, [
             h('span', null, '在训练结束前您不能对系统做任何其他的操作，除非您希望执行 '),
