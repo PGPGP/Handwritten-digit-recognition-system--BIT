@@ -18,12 +18,14 @@
       </el-select>
     </div>
     <div class="train" :style="stylrOfTrain">
-      <span><br><br>(训练集:测试集)%</span>
+      <span><br><br>训练集:测试集</span>
     </div>
     <div class="ratio" style="margin-left: 5%;margin-right: 5%;">
       <el-slider
         v-model="ratioValue"
-        show-input>
+        show-input
+        :step=0.1
+        :max=1>
       </el-slider>
     </div>
     <br>
@@ -69,6 +71,7 @@
 <script>
 import axios from 'axios'
 import { socket } from './websocket'
+import * as echarts from 'echarts'
 export default {
   data() {
       return { 
@@ -80,10 +83,10 @@ export default {
           label: '测试文本1'
         }],
         value: '',
-        ratioValue: 0,
-        input_epoch: '',
-        input_batch: '',
-        input_lr: '',
+        ratioValue: 0.8,
+        input_epoch: 10,
+        input_batch: 32,
+        input_lr: 0.001,
         trainFlag: false,
         src1:'',
         src2:'',
@@ -117,7 +120,7 @@ export default {
         para:{
           user_id: 1, //请求的用户id
           type: 'start', //websocket请求的类型。在这个用例中，为"start"
-          tItem: {
+          object: {
             model_name: '111', //待训练的模型名称
             user_id: 2, //创建模型的用户id
             dataset_id: 3, //数据集id
@@ -131,10 +134,18 @@ export default {
     },
     methods:{
       train_start: function(){
-        this.para.tItem.ratio = this.ratioValue
-        this.para.tItem.epoch = this.input_epoch
-        this.para.tItem.batch_size = this.input_batch
-        this.para.tItem.learning_rate = this.input_lr
+        for(const i in this.options){
+          if(this.options[i].dataset_name == this.value){
+            this.para.object.model_name = this.options[i].dataset_name
+            this.para.object.user_id = this.options[i].user_id
+            this.para.object.dataset_id = this.options[i].dataset_id
+            break
+          }
+        }
+        this.para.object.ratio = this.ratioValue
+        this.para.object.epoch = this.input_epoch
+        this.para.object.batch_size = this.input_batch
+        this.para.object.learning_rate = this.input_lr
         socket.sendMsg(JSON.stringify(this.para))
         this.trainFlag = !this.trainFlag
         const h = this.$createElement;
