@@ -1,9 +1,9 @@
 <template>
-  <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
+  <div class="register-container">
+    <el-form ref="registerForm" :model="registerForm" :rules="registerRules" class="register-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">欢迎使用手写数字识别系统</h3>
+        <h3 class="title">注册</h3>
       </div>
 
       <el-form-item prop="username">
@@ -12,7 +12,7 @@
         </span>
         <el-input
           ref="username"
-          v-model="loginForm.username"
+          v-model="registerForm.username"
           placeholder="用户名"
           name="username"
           type="text"
@@ -26,15 +26,33 @@
           <svg-icon icon-class="password" />
         </span>
         <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
+          v-model="registerForm.password"
           :type="passwordType"
           placeholder="密码"
           name="password"
           tabindex="2"
-          auto-complete="on"
-          @keyup.enter.native="handleLogin"
+          auto-complete="off"
+          @keyup.enter.native="handleRegister"
+        />
+        <span class="show-pwd" @click="showPwd">
+          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+        </span>
+      </el-form-item>
+
+      <el-form-item prop="password2">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          :key="passwordType"
+          ref="password"
+          v-model="registerForm.password2"
+          :type="passwordType"
+          placeholder="确认密码"
+          name="password2"
+          tabindex="3"
+          auto-complete="off"
+          @keyup.enter.native="handleRegister"
         />
         <span class="show-pwd" @click="showPwd">
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
@@ -42,26 +60,18 @@
       </el-form-item>
 
       <div class="btnGroup">
-        <el-button :loading="loading" type="primary" style="margin-left:70px;width:120px;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-        <el-button style="margin-left:50px;width:120px;margin-bottom:30px;" @click.prevent="handleRegister">注册</el-button>
-      <!--<router-view></router-view>-->
+        <el-button type="primary" style="margin-left:70px;width:120px;margin-bottom:30px;" @click.prevent="handleRegister">提交</el-button>
+        <el-button style="margin-left:50px;width:120px;margin-bottom:30px;" @click="goBack">返回</el-button>
       </div>
-
-      <!-- <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div> -->
-
     </el-form>
   </div>
 </template>
 
 <script>
 import { validUsername } from '@/utils/validate'
-// import axios from 'axios'
 
 export default {
-  name: 'Login',
+  name: 'Register',
   data() {
     const validateUsername = (rule, value, callback) => {
       if (value === '') {
@@ -75,34 +85,49 @@ export default {
       }
     }
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('请输入正确的密码'))
+      if (value === '') {
+        callback(new Error('请输入密码'))
       } else {
-        callback()
+        if (value.length < 6) {
+          callback(new Error('密码不能少于6位'))
+        } else {
+          if (this.registerForm.checkPass !== '') {
+          // 刚开始是validatePassword显示没有函数，改成filed就可以了
+            this.$refs.registerForm.validateField('checkPass')
+          }
+          callback()
+        }
       }
     }
+    const validatePassword2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'))
+      } else {
+        if (value !== this.registerForm.password) {
+          callback(new Error('两次密码不一致'))
+        } else {
+          callback()
+        }
+      }
+    }
+
     return {
-      loginForm: {
+      registerForm: {
         username: '',
-        password: ''
+        password: '',
+        password2: ''
       },
-      loginRules: {
+      registerRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        password2: [{ required: true, trigger: 'blur', validator: validatePassword2 }]
       },
       loading: false,
       passwordType: 'password',
       redirect: undefined
     }
   },
-  watch: {
-    $route: {
-      handler: function(route) {
-        this.redirect = route.query && route.query.redirect
-      },
-      immediate: true
-    }
-  },
+
   methods: {
     showPwd() {
       if (this.passwordType === 'password') {
@@ -114,8 +139,8 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
+    handleRegister() {
+      this.$refs.registerForm.validate(valid => {
         // 点击登陆后，让登录按钮转圈圈
         this.loading = true
         // 经过校验，账号密码都不为空，发送请求到后端登录接口
@@ -123,27 +148,25 @@ export default {
           const _this = this
           // 使用axios将登录信息发送到后端
           this.axios({
-            url: 'http://localhost:8080/user/login', // 请求地址
+            url: 'http://localhost:8080/user/register', // 请求地址
             method: 'post', //  请求方法
             headers: { //  请求头
               'Content-Type': 'application/json'
             },
             params: {
-              user_name: _this.loginForm.username,
-              user_password: _this.loginForm.password
+              user_name: _this.registerForm.username,
+              user_password: _this.registerForm.password
             }
           }).then((res) => { // 收到后端响应执行该括号内的代码，res为响应信号
             if (res.data.code === '20000') {
               //  将用户信息存储到sessionStorage中
-              sessionStorage.setItem('userInfo', JSON.stringify(res.data.data))
-              // this.$store.dispatch('user/login', this.loginForm)
-              this.$router.push('/')
+              // sessionStorage.setItem('userInfo', JSON.stringify(res.data.data))
+              // this.$router.push('/login')
               this.$message({
                 message: res.data.msg,
                 type: 'sucess'
               })
-            } else { //  响应编码不为20000，登录失败
-              // 显示后端响应失败信息
+            } else { //  x响应编码不为20000，登录失败
               this.$message({
                 message: res.data.msg,
                 type: 'warning'
@@ -159,26 +182,8 @@ export default {
         }
       })
     },
-    handleLogin1() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
-    handleRegister() {
-      this.loading = true
-      this.$router.replace('/register')
-      this.loading = false
+    goBack() {
+      this.$router.push('/login')
     }
   }
 }
@@ -193,13 +198,13 @@ $light_gray:#fff;
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
+  .register-container .el-input input {
     color: $cursor;
   }
 }
 
 /* reset element-ui css */
-.login-container {
+.register-container {
   .el-input {
     display: inline-block;
     height: 47px;
@@ -236,20 +241,21 @@ $bg:#2d3a4b;
 $dark_gray:#889aa4;
 $light_gray:#eee;
 
-.login-container {
+.register-container {
   min-height: 100%;
   width: 100%;
   background-color: $bg;
   overflow: hidden;
-  background-image:url('../../assets/background_images/background9.jpg') ;
+  background-image:url('../../assets/background_images/background12.jpg') ;
   background-size: 100%;
   display: flex;//平铺
   align-items:center ;
-  .login-form {
+
+  .register-form {
     position: relative;
-    width: 510px;
+    width: 500px;
     max-width: 100%;
-    padding: 35px 35px 10px;
+    padding: 30px 30px 10px;
     margin: 0 auto;
     overflow: hidden;
     background-color: rgb(19, 39, 63);
