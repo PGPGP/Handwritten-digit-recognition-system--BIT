@@ -210,6 +210,21 @@ export default {
             console.log('this.tableData[i]')//尽管成功匹配了，值并没有得到修改，需要等待讨论
             this.input_model = this.tableData[i].model_name
             this.input_time = this.tableData[i].model_activate_date
+            let year = new Date().getFullYear(); //获取当前时间的年份
+            let month = new Date().getMonth() + 1; //获取当前时间的月份
+            let day = new Date().getDate(); //获取当前时间的天数
+            let date = this.input_time.substr(0,10)
+            let nowDate = year + '-' + month + '-' + day
+            console.log(nowDate)
+            console.log(date)
+            let dateSpan, iDays
+	          let sDate1 = Date.parse(date)
+	          let sDate2 = Date.parse(nowDate)
+            dateSpan = sDate2 - sDate1
+	          dateSpan = Math.abs(dateSpan)
+	          iDays = Math.floor(dateSpan / (24 * 3600 * 1000))
+            console.log(iDays)
+            this.input_span = iDays
             break
           }
         }

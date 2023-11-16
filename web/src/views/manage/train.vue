@@ -72,6 +72,7 @@
 import axios from 'axios'
 import { socket } from './websocket'
 import * as echarts from 'echarts'
+import {user} from '../dashboard/index.vue'
 export default {
   data() {
       return { 
@@ -130,18 +131,26 @@ export default {
             learning_rate: '' //训练超参数
           }
         },
+        stop:{
+          user_id: 1,
+          type: 'stop',
+          object: null
+        },
+        charts: '',
+        chartsData: ["155", "400", "900", "800", "300", "900", "270"],
+        user: {
+          user_name: '',
+          user_id: null
+        }
       }
     },
     methods:{
       train_start: function(){
-        for(const i in this.options){
-          if(this.options[i].dataset_name == this.value){
-            this.para.object.model_name = this.options[i].dataset_name
-            this.para.object.user_id = this.options[i].user_id
-            this.para.object.dataset_id = this.options[i].dataset_id
-            break
-          }
+        if(this.value == ''){
+          alert('数据集不能为空')
+          return
         }
+        //socket.reconnect()
         this.para.object.ratio = this.ratioValue
         this.para.object.epoch = this.input_epoch
         this.para.object.batch_size = this.input_batch
@@ -152,6 +161,8 @@ export default {
         this.$msgbox({
           showClose:false,
           closeOnClickModal:false,
+          closeOnPressEscape:false,
+          showCancelButton:false,
           title: '训练中',
           message: h('p', null, [
             h('span', null, '在训练结束前您不能对系统做任何其他的操作，除非您希望执行 '),
@@ -169,7 +180,7 @@ export default {
                   // 添加属性
                   text_inside: "true",
                   stroke_width: "22",
-                  percentage: "80",
+                  percentage: 80,
                   id: "pro",
                   status:"success",
                 },
@@ -181,14 +192,16 @@ export default {
               }, []), h('span', {
                 class: 'el-progress',
               }, )]),
+              h('div',{style: 'width: 100%; height: 300px; background:#fff', id: 'main'},),
           ]),
           
           confirmButtonText: '强制中止',
-          
+          cancelButtonText: '显示训练详情',
           beforeClose: (action, instance, done) => {
             if (action === 'confirm') {
               instance.confirmButtonLoading = true;
               instance.confirmButtonText = '执行中止操作中...'
+              socket.sendMsg(JSON.stringify(this.stop))
               setTimeout(() => {
                 done();
                 setTimeout(() => {
@@ -196,7 +209,8 @@ export default {
                 }, 300);
               }, 3000);
             } else {
-              done();
+                this.drawLine('main')
+              //done();
             }
           }
         }).then(action => {
@@ -232,7 +246,16 @@ export default {
             })
             break;
           case "error":
-            this.loading = false;
+            this.loading = false
+            break
+          case "info":
+            //这里写改变chartsData的赋值
+            this.drawLine('main')
+            break
+          case "finish":
+            this.$msgbox.done()//未测试效果
+            alert('训练完成')
+            this.train_over()
             break
           default: 
             alert('666')
@@ -242,6 +265,78 @@ export default {
       },
       consumeMessage(info) {
         //拿到最新数据重新渲染界面
+      },
+      drawLine(id) {
+        this.charts = echarts.init(document.getElementById(id))
+        this.charts.setOption({
+          title:{
+            left: '3%',
+            top: '5%',
+            text:'训练情况'
+          },
+          tooltip:{
+            trigger: 'axis'
+          },
+          legend: {
+            align: 'right',
+            left:'3%',
+            top: '15%',
+            data: ['epoch']
+          },
+          grid:{
+            top:'30%',
+            left:'5%',
+            right:'5%',
+            bottom:'5%',
+            containLabel: true
+          },
+          toolbox: {
+            feature:{
+              saveAsImage: {}//保存为图片？？？这要填什么，地址吗？
+            }
+          },
+          xAxis:{
+            type: 'category',
+            boundaryGap:true,
+            axisTick:{
+              alignWithLabel:true//刻度线和标签对齐
+            },
+            data:['1','2','3','4','5','6','7']
+          },
+          yAxis:{
+            type: 'value',
+            boundaryGap:true,
+            splitNumber:4, //有几个纵坐标
+            interval:250 //坐标间隔
+          },
+          series:[{
+            name:'loss',
+            type:'line',
+            stack:'?',//不知道是干什么的
+            areaStyle:{
+              color:{
+                type:'linear',
+                x:0,
+                y:0,
+                x2:0,
+                y2:0,
+                colorStops:[{
+                  offset:0,color:'rgb(255,200,213)'//0%处的颜色
+                },{
+                  offset:1,color:'#ffffff'//100%处的颜色
+                }],
+                global:false
+              }
+            },
+            itemStyle:{
+              color: 'rgb(255,96,64)',//改变折线点的颜色
+              lineStyle:{
+                color:'rgb(255.96.64)'//改变折线颜色
+              }
+            },
+            data: this.chartsData
+          }]
+        })
       }
     },
     created:function(){
@@ -263,6 +358,8 @@ export default {
     },
     mounted:function(){
       console.log('训练被挂载')
+      this.user = user //需要那边给一个导出
+      console.log(user)
     }
 }
 </script>
