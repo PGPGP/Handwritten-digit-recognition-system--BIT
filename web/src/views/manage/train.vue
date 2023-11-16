@@ -72,6 +72,7 @@
 import axios from 'axios'
 import { socket } from './websocket'
 import * as echarts from 'echarts'
+import {user} from '../dashboard/index.vue'
 export default {
   data() {
       return { 
@@ -136,19 +137,20 @@ export default {
           object: null
         },
         charts: '',
-        chartsData: ["155", "400", "900", "800", "300", "900", "270"]
+        chartsData: ["155", "400", "900", "800", "300", "900", "270"],
+        user: {
+          user_name: '',
+          user_id: null
+        }
       }
     },
     methods:{
       train_start: function(){
-        for(const i in this.options){
-          if(this.options[i].dataset_name == this.value){
-            this.para.object.model_name = this.options[i].dataset_name
-            this.para.object.user_id = this.options[i].user_id
-            this.para.object.dataset_id = this.options[i].dataset_id
-            break
-          }
+        if(this.value == ''){
+          alert('数据集不能为空')
+          return
         }
+        //socket.reconnect()
         this.para.object.ratio = this.ratioValue
         this.para.object.epoch = this.input_epoch
         this.para.object.batch_size = this.input_batch
@@ -244,7 +246,7 @@ export default {
             })
             break;
           case "error":
-            this.loading = false;
+            this.loading = false
             break
           case "info":
             //这里写改变chartsData的赋值
@@ -253,6 +255,7 @@ export default {
           case "finish":
             this.$msgbox.done()//未测试效果
             alert('训练完成')
+            this.train_over()
             break
           default: 
             alert('666')
@@ -355,6 +358,8 @@ export default {
     },
     mounted:function(){
       console.log('训练被挂载')
+      this.user = user //需要那边给一个导出
+      console.log(user)
     }
 }
 </script>
