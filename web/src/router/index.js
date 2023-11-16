@@ -52,6 +52,13 @@ export const constantRoutes = [
     hidden: true
   },
 
+  // {
+  //   path: '/personal',
+  //   name: 'personal',
+  //   component: () => import('@/views/personal_center/person.vue')
+
+  // },
+
   {
     path: '/',
     component: Layout,

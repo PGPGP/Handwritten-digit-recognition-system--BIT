@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">name: {{ user.user_name }}</div>
+    <div class="dashboard-text">name: {{ user_name }}</div>
 
     <div :style="styleOfWel">欢迎使用手写数字识别管理系统</div>
   </div>
@@ -8,6 +8,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import users from '@/store/users/users.vue'
 
 export default {
   name: 'Dashboard',
@@ -18,27 +19,24 @@ export default {
   },
   data() {
     return {
+      user_id: users.user_id,
+      user_name: users.user_name,
       styleOfWel: {
         color: 'silver',
         fontSize: '50px',
         textAlign: 'center',
         marginTop: '10%',
         opacity: '0.5'
-      },
-      user: {
-        user_name: '',
-        user_id: null
       }
     }
-  },
-
-  mounted() {
-    if (sessionStorage.getItem('userInfo')) {
-      // 将用户信息存储到sessionStorage中
-      this.user = JSON.parse(sessionStorage.getItem('userInfo'))
-      // var user = JSON.parse(sessionStorage.getItem('userInfo'))
-    }
   }
+  // mounted() {
+  //   if (sessionStorage.getItem('userInfo')) {
+  //     // 将用户信息存储到sessionStorage中
+  //     this.user = JSON.parse(sessionStorage.getItem('userInfo'))
+  //   }
+  // }
+
 }
 </script>
 
