@@ -21,7 +21,7 @@ export const socket = {
       socket.websocket.onopen = socket.websocketOnOpen
       socket.websocket.onerror = socket.websocketOnError
       socket.websocket.onclose = socket.websocketOnClose
-      this.resetHeartbeat()
+      //this.resetHeartbeat()
     },
     reconnect() {
       //判断连接状态
@@ -69,7 +69,7 @@ export const socket = {
     },
     websocketOnOpen(event) {
       //连接开启后向后台发送消息进行一次心跳检测
-      socket.sendMsg(JSON.stringify({ type: "heartbeat" }))
+      //socket.sendMsg(JSON.stringify({ type: "heartbeat" }))
     },
     websocketOnError(error) {
       console.log(error)
