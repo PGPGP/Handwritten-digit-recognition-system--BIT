@@ -34,6 +34,10 @@
       <h2>超参数</h2>
     </div>
     <div class="para" :style="styleOfPara">
+      <span>模型名称
+        <el-input v-model="input_name" placeholder="请输入内容" style="width: 20%"></el-input>
+      </span>
+      <br>
       <span>epoch
         <el-input v-model="input_epoch" placeholder="请输入内容" style="width: 20%"></el-input>
       </span>
@@ -48,7 +52,7 @@
       <el-button v-if="trainFlag === false" type="primary" @click="train_start">开始训练<i class="el-icon-upload el-icon--right"></i></el-button>
       <el-button v-else type="primary" :loading="true">训练中</el-button>
     </div>
-    <div class="h2" :style="styleOfH2">
+    <!-- <div class="h2" :style="styleOfH2">
       <h2><br>训练结果</h2>
     </div>
     <div class="block" style="margin-left: 40%">
@@ -64,7 +68,22 @@
           加载中<span class="dot">...</span>
         </div>
       </el-image>
-    </div>
+    </div> -->
+    <el-dialog
+      title="训练情况"
+      :visible.sync="centerDialogVisible"
+      width="50%"
+      :close-on-click-modal='false'
+      :close-on-press-escape='false'
+      :show-close="false"
+      center>
+      <div id="main" style="width: 100%; height: 500px; background:#fff"></div>
+      <span>训练过程中不能操作其他界面，除非您希望强制中止训练</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button v-if="diagFlag == false" type="primary" @click="train_stop">中止训练</el-button>
+        <el-button v-else type="primary" @click="train_over">完成</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -72,7 +91,8 @@
 import axios from 'axios'
 import { socket } from './websocket'
 import * as echarts from 'echarts'
-import {user} from '../dashboard/index.vue'
+import users from '@/store/users/users.vue'
+import { options } from 'runjs'
 export default {
   data() {
       return { 
@@ -88,6 +108,7 @@ export default {
         input_epoch: 10,
         input_batch: 32,
         input_lr: 0.001,
+        input_name: '',
         trainFlag: false,
         src1:'',
         src2:'',
@@ -137,11 +158,17 @@ export default {
           object: null
         },
         charts: '',
-        chartsData: ["155", "400", "900", "800", "300", "900", "270"],
+        trainLossData: [],
+        trainAccData: [],
+        testLossData: [],
+        testAccData: [],
+        xData: [],
         user: {
           user_name: '',
           user_id: null
-        }
+        },
+        centerDialogVisible: false,
+        diagFlag: false
       }
     },
     methods:{
@@ -150,80 +177,116 @@ export default {
           alert('数据集不能为空')
           return
         }
-        //socket.reconnect()
+        if(this.input_name == ''){
+          alert('模型名称不能为空')
+          return
+        }
+        for(let i=1; i <= this.input_epoch; i++){
+          this.xData.push(i)
+        }
+        console.log('开始尝试重连')
+        socket.reconnect()
+        console.log('尝试重连结束')
+        this.para.user_id = this.user.user_id
+        for(const i in this.options){
+          if(this.options[i].dataset_name == this.value){
+            console.log('检测'+this.options[i])
+            this.para.object.dataset_id = this.options[i].dataset_id
+            this.para.object.model_name = this.input_name
+            this.para.object.user_id = this.options[i].user_id
+            break
+          }
+        }
         this.para.object.ratio = this.ratioValue
         this.para.object.epoch = this.input_epoch
         this.para.object.batch_size = this.input_batch
         this.para.object.learning_rate = this.input_lr
         socket.sendMsg(JSON.stringify(this.para))
         this.trainFlag = !this.trainFlag
-        const h = this.$createElement;
-        this.$msgbox({
-          showClose:false,
-          closeOnClickModal:false,
-          closeOnPressEscape:false,
-          showCancelButton:false,
-          title: '训练中',
-          message: h('p', null, [
-            h('span', null, '在训练结束前您不能对系统做任何其他的操作，除非您希望执行 '),
-            h('i', { style: 'color: teal' }, '强制中止'),
-            h('span', {
-              style:{
+        //const h = this.$createElement;
+        this.centerDialogVisible = true
+        // this.$msgbox({
+        //   showClose:false,
+        //   closeOnClickModal:false,
+        //   closeOnPressEscape:false,
+        //   showCancelButton:false,
+        //   title: '训练中',
+        //   message: h('p', null, [
+        //     h('span', null, '在训练结束前您不能对系统做任何其他的操作，除非您希望执行 '),
+        //     h('i', { style: 'color: teal' }, '强制中止'),
+        //     h('span', {
+        //       style:{
 
-              }
-            },
-            [h('el-progress', {
-                style: {
-                  cursor: 'pointer',
-                },
-                attrs: {
-                  // 添加属性
-                  text_inside: "true",
-                  stroke_width: "22",
-                  percentage: 80,
-                  id: "pro",
-                  status:"success",
-                },
-                on: {
-                  change: () => {
-                    _this.statu = '1'
-                  }
-                }
-              }, []), h('span', {
-                class: 'el-progress',
-              }, )]),
-              h('div',{style: 'width: 100%; height: 300px; background:#fff', id: 'main'},),
-          ]),
+        //       }
+        //     },
+        //     [h('el-progress', {
+        //         style: {
+        //           cursor: 'pointer',
+        //         },
+        //         attrs: {
+        //           // 添加属性
+        //           text_inside: "true",
+        //           stroke_width: "22",
+        //           percentage: 80,
+        //           id: "pro",
+        //           status:"success",
+        //         },
+        //         on: {
+        //           change: () => {
+        //             _this.statu = '1'
+        //           }
+        //         }
+        //       }, []), h('span', {
+        //         class: 'el-progress',
+        //       }, )]),
+        //       h('div',{style: 'width: 100%; height: 300px; background:#fff', id: 'main'},),
+        //   ]),
           
-          confirmButtonText: '强制中止',
-          cancelButtonText: '显示训练详情',
-          beforeClose: (action, instance, done) => {
-            if (action === 'confirm') {
-              instance.confirmButtonLoading = true;
-              instance.confirmButtonText = '执行中止操作中...'
-              socket.sendMsg(JSON.stringify(this.stop))
-              setTimeout(() => {
-                done();
-                setTimeout(() => {
-                  instance.confirmButtonLoading = false;
-                }, 300);
-              }, 3000);
-            } else {
-                this.drawLine('main')
-              //done();
-            }
-          }
-        }).then(action => {
-          this.$message({
-            type: 'info',
-            message: '训练中断'//'action: ' + action
-          })
-          this.trainFlag = !this.trainFlag
-        })
+        //   confirmButtonText: '强制中止',
+        //   cancelButtonText: '显示训练详情',
+        //   beforeClose: (action, instance, done) => {
+        //     if (action === 'confirm') {
+        //       instance.confirmButtonLoading = true;
+        //       instance.confirmButtonText = '执行中止操作中...'
+        //       socket.sendMsg(JSON.stringify(this.stop))
+        //       setTimeout(() => {
+        //         done();
+        //         setTimeout(() => {
+        //           instance.confirmButtonLoading = false;
+        //         }, 300);
+        //       }, 3000);
+        //     } else {
+        //         this.drawLine('main')
+        //       //done();
+        //     }
+        //   }
+        // }).then(action => {
+        //   this.$message({
+        //     type: 'info',
+        //     message: '训练中断'//'action: ' + action
+        //   })
+        //   this.trainFlag = !this.trainFlag
+        // })
       },
       train_over: function(){
-        
+        this.diagFlag = false
         this.trainFlag = !this.trainFlag
+        this.centerDialogVisible = false
+        this.charts.dispose()
+      },
+      train_stop(){
+        this.stop.user_id = this.user.user_id
+        socket.sendMsg(JSON.stringify(this.stop))
+        this.centerDialogVisible = false
+        this.diagFlag = false
+        this.trainFlag = !this.trainFlag
+        this.xData = []
+        this.trainLossData = []
+        this.trainAccData = []
+        this.testLossData = []
+        this.testAccData = []
+        this.charts.dispose()
+        alert('训练中止')
       },
       init() {
         socket.sendMsg(JSON.stringify(this.para))
@@ -250,12 +313,22 @@ export default {
             break
           case "info":
             //这里写改变chartsData的赋值
+            this.trainLossData.push(info.object.train_loss)
+            this.trainAccData.push(info.object.train_acc)
+            this.testLossData.push(info.object.test_loss)
+            this.testAccData.push(info.object.test_acc)
             this.drawLine('main')
             break
           case "finish":
-            this.$msgbox.done()//未测试效果
+            //this.$msgbox.close()
+            //this.centerDialogVisible = false
+            this.xData = []
+            this.trainLossData = []
+            this.trainAccData = []
+            this.testLossData = []
+            this.testAccData = []
             alert('训练完成')
-            this.train_over()
+            this.diagFlag = true
             break
           default: 
             alert('666')
@@ -267,7 +340,10 @@ export default {
         //拿到最新数据重新渲染界面
       },
       drawLine(id) {
+        if(this.charts != '')
+          this.charts.dispose()
         this.charts = echarts.init(document.getElementById(id))
+        this.charts.clear()
         this.charts.setOption({
           title:{
             left: '3%',
@@ -281,7 +357,7 @@ export default {
             align: 'right',
             left:'3%',
             top: '15%',
-            data: ['epoch']
+            data: ['train_loss', 'train_acc', 'test_loss', 'test_acc']
           },
           grid:{
             top:'30%',
@@ -301,16 +377,16 @@ export default {
             axisTick:{
               alignWithLabel:true//刻度线和标签对齐
             },
-            data:['1','2','3','4','5','6','7']
+            data:this.xData
           },
           yAxis:{
             type: 'value',
             boundaryGap:true,
-            splitNumber:4, //有几个纵坐标
-            interval:250 //坐标间隔
+            splitNumber:26, //有几个纵坐标
+            interval:0.5 //坐标间隔
           },
           series:[{
-            name:'loss',
+            name:'train_loss',
             type:'line',
             stack:'?',//不知道是干什么的
             areaStyle:{
@@ -331,10 +407,88 @@ export default {
             itemStyle:{
               color: 'rgb(255,96,64)',//改变折线点的颜色
               lineStyle:{
-                color:'rgb(255.96.64)'//改变折线颜色
+                color:'rgb(255,96,64)'//改变折线颜色
               }
             },
-            data: this.chartsData
+            data: this.trainLossData
+          },{
+            name:'train_acc',
+            type:'line',
+            stack:'?',//不知道是干什么的
+            areaStyle:{
+              color:{
+                type:'linear',
+                x:0,
+                y:0,
+                x2:0,
+                y2:0,
+                colorStops:[{
+                  offset:0,color:'rgb(212,199,255)'//0%处的颜色
+                },{
+                  offset:1,color:'#ffffff'//100%处的颜色
+                }],
+                global:false
+              }
+            },
+            itemStyle:{
+              color: 'rgb(233,199,255)',//改变折线点的颜色
+              lineStyle:{
+                color:'rgb(233,199,255)'//改变折线颜色
+              }
+            },
+            data: this.trainAccData
+          },{
+            name:'test_loss',
+            type:'line',
+            stack:'?',//不知道是干什么的
+            areaStyle:{
+              color:{
+                type:'linear',
+                x:0,
+                y:0,
+                x2:0,
+                y2:0,
+                colorStops:[{
+                  offset:0,color:'rgb(199,255,220)'//0%处的颜色
+                },{
+                  offset:1,color:'#ffffff'//100%处的颜色
+                }],
+                global:false
+              }
+            },
+            itemStyle:{
+              color: 'rgb(199,255,241)',//改变折线点的颜色
+              lineStyle:{
+                color:'rgb(199,255,241)'//改变折线颜色
+              }
+            },
+            data: this.testLossData
+          },{
+            name:'test_acc',
+            type:'line',
+            stack:'?',//不知道是干什么的
+            areaStyle:{
+              color:{
+                type:'linear',
+                x:0,
+                y:0,
+                x2:0,
+                y2:0,
+                colorStops:[{
+                  offset:0,color:'rgb(255,212,199)'//0%处的颜色
+                },{
+                  offset:1,color:'#ffffff'//100%处的颜色
+                }],
+                global:false
+              }
+            },
+            itemStyle:{
+              color: 'rgb(255,199,199)',//改变折线点的颜色
+              lineStyle:{
+                color:'rgb(255,199,199)'//改变折线颜色
+              }
+            },
+            data: this.testAccData
           }]
         })
       }
@@ -358,8 +512,9 @@ export default {
     },
     mounted:function(){
       console.log('训练被挂载')
-      this.user = user //需要那边给一个导出
-      console.log(user)
+      this.user = users
+      console.log(this.user.user_id)
+      console.log(this.user.user_name)
     }
 }
 </script>
