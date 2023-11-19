@@ -3,6 +3,7 @@ from flask import Flask
 from flask_sockets import Sockets
 import torch.nn as nn
 from torch.utils.data import DataLoader
+import torchvision
 import os
 from train import *
 from model import CNN
@@ -20,6 +21,7 @@ sockets = Sockets(app)
 stop_training_flags = {}
 
 MODEL_SAVE_ROOT = 'D:/imageRecog_temp/py/model/'
+MNIST_FOLDER = 'D:/imageRecog_temp/py/mnist/'
 if not os.path.exists(MODEL_SAVE_ROOT):
     os.makedirs(MODEL_SAVE_ROOT)
 
@@ -61,23 +63,57 @@ def train_model(ws, user_id, data):
     txt_path = data['txt_path']
 
     stop_training_flags[user_id] = False
-    
 
     print("准备打开文件...")
-    with open(txt_path, 'r') as file:
-        lines = file.readlines()
-    file.close()
-    datainfo = [line.strip('\n').split(',') for line in lines]
-    datainfo = [(path, int(label)) for path, label in datainfo]
-    train_data, test_data = train_test_split(datainfo, test_size=1 - ratio, random_state=42)
+    if(txt_path == 'mnist'):
+        if not os.path.exists(MNIST_FOLDER) or not os.path.isdir(MNIST_FOLDER):
+            print('开始下载数据集')
+            # 下载训练集
+            train_dataset = torchvision.datasets.MNIST(MNIST_FOLDER,
+                                                  train=True,
+                                                  transform=torchvision.transforms.ToTensor(),  # 将数据类型转化为Tensor
+                                                  download=True)
+            # 下载测试集
+            test_dataset = torchvision.datasets.MNIST(MNIST_FOLDER,
+                                                 train=False,
+                                                 transform=torchvision.transforms.ToTensor(),  # 将数据类型转化为Tensor
+                                                 download=True)
+        else:
+            print('数据集已下载 直接读取')
+            # 读取已下载的训练集
+            train_dataset = torchvision.datasets.MNIST(MNIST_FOLDER,
+                                                  train=True,
+                                                  transform=torchvision.transforms.ToTensor(),  # 将数据类型转化为Tensor
+                                                  download=False)
+            # 读取已下载的测试集
+            test_dataset = torchvision.datasets.MNIST(MNIST_FOLDER,
+                                                 train=False,
+                                                 transform=torchvision.transforms.ToTensor(),  # 将数据类型转化为Tensor
+                                                 download=False)
+
+        # 从 train_ds 加载训练集
+        train_loader = torch.utils.data.DataLoader(train_dataset,
+                                               batch_size=batch_size,
+                                               shuffle=True)
+        # 从 test_ds 加载测试集
+        test_loader = torch.utils.data.DataLoader(test_dataset,
+                                              batch_size=batch_size)
+    else:
+        with open(txt_path, 'r') as file:
+            lines = file.readlines()
+        file.close()
+        datainfo = [line.strip('\n').split(',') for line in lines]
+        datainfo = [(path, int(label)) for path, label in datainfo]
+        train_data, test_data = train_test_split(datainfo, test_size=1 - ratio, random_state=42)
+        train_dataset = MyDataset(train_data)
+        test_dataset = MyDataset(test_data)
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     print("开始训练...")
 
-    train_dataset = MyDataset(train_data)
-    test_dataset = MyDataset(test_data)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     train_loss = []
     train_acc = []
     test_loss = []
@@ -87,7 +123,7 @@ def train_model(ws, user_id, data):
     loss_fn = nn.CrossEntropyLoss()  # 创建损失函数
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-    template = 'Epoch:{:2d}, Train_acc:{:.1f}%, Train_loss:{:.3f}, Test_acc:{:.1f}%,Test_loss:{:.3f}'
+    # template = 'Epoch:{:2d}, Train_acc:{:.1f}%, Train_loss:{:.3f}, Test_acc:{:.1f}%,Test_loss:{:.3f}'
     for epoch in range(epochs):
         if stop_training_flags[user_id]:
             break
