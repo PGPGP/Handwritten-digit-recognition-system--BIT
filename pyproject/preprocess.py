@@ -50,7 +50,7 @@ def findBorderContours(path, maxArea=50):
     img = accessBinary(img)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     borders = []
-    for contour in contours:
+    for contour in contours[::-1]:
         # 将边缘拟合成一个边框
         x, y, w, h = cv2.boundingRect(contour)
         if w * h > maxArea:
@@ -68,7 +68,7 @@ def getResults(path, borders, results=None):
     for i, border in enumerate(borders):
         cv2.rectangle(img, border[0], border[1], (0, 0, 255))
         if results[i] is not None:
-            cv2.putText(img, str(results[i]), border[0], cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 255, 0), 1)
+            cv2.putText(img, str(results[i]), border[0], cv2.FONT_HERSHEY_COMPLEX, 2.0, (0, 255, 0), 1)
         # cv2.circle(img, border[0], 1, (0, 255, 0), 0)
 
     # cv2.namedWindow('test', 0)
