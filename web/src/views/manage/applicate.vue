@@ -212,6 +212,9 @@ export default {
               if(response != null){
                 this.options = response.data.models
                 this.tableData = response.data.models
+                for(const i in this.tableData){
+                  this.tableData[i].model_create_date = this.formatDate(this.tableData[i].model_create_date)
+                }
                 console.log(response)
               }
           
@@ -257,6 +260,9 @@ export default {
         if(response != null){
           this.options = response.data.models
           this.tableData = response.data.models
+          for(const i in this.tableData){
+            this.tableData[i].model_create_date = this.formatDate(this.tableData[i].model_create_date)
+          }
           console.log(response)
         }
         
