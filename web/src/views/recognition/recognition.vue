@@ -96,7 +96,8 @@ export default {
       const formData = new FormData()
       formData.append('file', this.selectedImage)
       formData.append('postfix', this.selectedImagePostfix)
-      axios.post('http://localhost:8080/use/image', formData, {
+      console.log("!")
+      axios.post('http://192.168.43.254:8080/use/image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
