@@ -138,7 +138,7 @@ export default {
         queryCondition: {
           type: "message",
         },
-        url: 'ws://localhost:8080/manage/train',
+        url: 'ws://192.168.43.254:8080/manage/train',
         para:{
           user_id: 1, //请求的用户id
           type: 'start', //websocket请求的类型。在这个用例中，为"start"
@@ -168,7 +168,8 @@ export default {
           user_id: null
         },
         centerDialogVisible: false,
-        diagFlag: false
+        diagFlag: false,
+        drawnum: 1
       }
     },
     methods:{
@@ -184,9 +185,9 @@ export default {
         for(let i=1; i <= this.input_epoch; i++){
           this.xData.push(i)
         }
-        console.log('开始尝试重连')
-        socket.reconnect()
-        console.log('尝试重连结束')
+        // console.log('开始尝试重连')
+        // socket.reconnect()
+        // console.log('尝试重连结束')
         this.para.user_id = this.user.user_id
         for(const i in this.options){
           if(this.options[i].dataset_name == this.value){
@@ -317,11 +318,17 @@ export default {
             this.trainAccData.push(info.object.train_acc)
             this.testLossData.push(info.object.test_loss)
             this.testAccData.push(info.object.test_acc)
-            this.drawLine('main')
+            if(this.drawnum % 20 == 0){
+              this.drawLine('main')
+              this.drawnum = 1
+            }              
+            else
+              this.drawnum++
             break
           case "finish":
             //this.$msgbox.close()
             //this.centerDialogVisible = false
+            this.drawLine('main')
             this.xData = []
             this.trainLossData = []
             this.trainAccData = []
@@ -383,7 +390,7 @@ export default {
             type: 'value',
             boundaryGap:true,
             splitNumber:26, //有几个纵坐标
-            interval:0.5 //坐标间隔
+            interval:5 //坐标间隔
           },
           series:[{
             name:'train_loss',
@@ -495,7 +502,7 @@ export default {
     },
     created:function(){
       console.log('训练被创建')
-      axios.post("http://localhost:8080/request/dataset").then((response) => {
+      axios.post("http://192.168.43.254:8080/request/dataset").then((response) => {
         console.log('请求表单数据成功'+response)
         console.log(response.data)
         this.options = response.data.datasets
