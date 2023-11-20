@@ -176,6 +176,10 @@ export default {
       filterTag(value, row) {
         return row.is_active === value;
       },
+      formatDate(date) {
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        return new Date(date).toLocaleDateString('zh-CN', options);
+      },
       changeStatus() {
         // for(const i in this.options){
         //   if(this.options[i].model_name == this.value){
@@ -185,19 +189,30 @@ export default {
         const formData = new FormData()
         formData.append('model_id', this.value)
         console.log(this.value)
-        axios.post("http://localhost:8080/manage/switch_model",formData,{headers:{'Content-Type':'multipart/form-data'}}).then((response) => {
+        axios.post("http://192.168.43.254:8080/manage/switch_model",formData,{headers:{'Content-Type':'multipart/form-data'}}).then((response) => {
           if(response.data.result == "successful"){
-            for(const i in this.tableData){
-              this.tableData[i].is_active = 0
-            }
-            for(const i in this.tableData){
-              if(this.tableData[i].model_id == this.value){
-                this.tableData[i].is_active = 1
-                this.input_model = this.tableData[i].model_name
-                this.input_time = this.tableData[i].model_activate_date
-                break
+            // for(const i in this.tableData){
+            //   this.tableData[i].is_active = 0
+            // }
+            // for(const i in this.tableData){
+            //   if(this.tableData[i].model_id == this.value){
+            //     this.tableData[i].is_active = 1
+            //     this.input_model = this.tableData[i].model_name
+            //     this.input_time = this.tableData[i].model_activate_date
+            //     break
+            //   }
+            // }
+            axios.post("http://192.168.43.254:8080/request/model").then((response) => {
+              console.log('请求表单数据成功'+response)
+              //this.options = response.options
+              if(response != null){
+                this.options = response.data.models
+                this.tableData = response.data.models
+                console.log(response)
               }
-            }
+          
+              this.fresh()
+            })
           }
           else{
             alert('更换失败')
@@ -209,7 +224,7 @@ export default {
           if(this.tableData[i].is_active == 1){
             console.log('this.tableData[i]')//尽管成功匹配了，值并没有得到修改，需要等待讨论
             this.input_model = this.tableData[i].model_name
-            this.input_time = this.tableData[i].model_activate_date
+            this.input_time = this.formatDate(this.tableData[i].model_activate_date)
             let year = new Date().getFullYear(); //获取当前时间的年份
             let month = new Date().getMonth() + 1; //获取当前时间的月份
             let day = new Date().getDate(); //获取当前时间的天数
@@ -232,7 +247,7 @@ export default {
     },
     created:function(){
       console.log('应用被创建')
-      axios.post("http://localhost:8080/request/model").then((response) => {
+      axios.post("http://192.168.43.254:8080/request/model").then((response) => {
         console.log('请求表单数据成功'+response)
         //this.options = response.options
         if(response != null){
