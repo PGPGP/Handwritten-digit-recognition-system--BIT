@@ -148,7 +148,7 @@ export default {
           const _this = this
           // 使用axios将登录信息发送到后端
           this.axios({
-            url: 'http://localhost:8080/user/register', // 请求地址
+            url: 'http://192.168.43.254:8080/user/register', // 请求地址
             method: 'post', //  请求方法
             headers: { //  请求头
               'Content-Type': 'application/json'
