@@ -213,7 +213,7 @@ export default {
     //此处应为数据集列表数据
     fetchData() {
       this.listLoading = true;
-      axios.post('http://localhost:8081/request/dataset')
+      axios.post('http://192.168.43.254:8080/request/dataset')
         .then(response => {
           this.list = response.data.datasets;
         })
@@ -273,7 +273,7 @@ export default {
         this.$message('数据集已提交!');
 
         // 发送 POST 请求
-        axios.post("http://localhost:8081/manage/upload_dataset", formData, {
+        axios.post("http://192.168.43.254:8080/manage/upload_dataset", formData, {
             headers: {
             'Content-Type': 'multipart/form-data', // 设置请求头
             }
@@ -302,7 +302,7 @@ export default {
       
       this.$message('删除请求已提交!')
 
-      axios.post("http://localhost:8081/manage/delete_dataset",formData,{
+      axios.post("http://192.168.43.254:8080/manage/delete_dataset",formData,{
         headers: {
             'Content-Type': 'multipart/form-data', // 设置请求头
         }

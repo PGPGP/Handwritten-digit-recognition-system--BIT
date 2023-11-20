@@ -15,7 +15,7 @@
         ></el-option>
       </el-select>
     </div>
-    <div v-if="selectedModelId">
+    <div v-if="selectedModelId>=0">
       <br />
       <div class="chart">
         <el-card>
@@ -23,13 +23,8 @@
         </el-card>
       </div>
       <br />
-      <div class="usage-list">
+      <div>
         <h2>模型使用统计表</h2>
-        <ul>
-          <li v-for="(value, key) in modelUsageStats" :key="key">
-            {{ key }}: {{ value }}
-          </li>
-        </ul>
       </div>
     </div>
     <el-table
@@ -101,7 +96,7 @@ export default {
   methods: {
     async fetchModels() {
       try {
-        const response = await axios.post('http://localhost:8080/request/model')
+        const response = await axios.post('http://192.168.43.254:8080/request/model')
         this.models = response.data.models
         this.currentModel = response.data.current_model
         this.selectedModelId = response.data.current_model.model_id
@@ -114,7 +109,8 @@ export default {
       try {
         const formData = new FormData()
         formData.append('model_id', this.selectedModelId.toString())
-        const response = await axios.post('http://localhost:8080/request/usage', formData, {
+        // console.log(this.selectedModelId.toString())
+        const response = await axios.post('http://192.168.43.254:8080/request/usage', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -138,7 +134,7 @@ export default {
       }
     },
     async handleModelChange() {
-      if (this.selectedModelId) {
+      if (this.selectedModelId>=0) {
         await this.fetchModelUsageStats()
       }
     },
