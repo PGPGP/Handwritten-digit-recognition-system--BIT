@@ -186,6 +186,10 @@ export default {
         //     id = this.
         //   }
         // }
+        if(this.value == ''){
+          alert('模型不能为空')
+          return
+        }
         const formData = new FormData()
         formData.append('model_id', this.value)
         console.log(this.value)
