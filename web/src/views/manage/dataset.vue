@@ -42,7 +42,7 @@
             <!-- <i class="el-icon-time" />
             <span>{{ scope.row.display_time }}</span> -->
             <el-button 
-              v-if="scope.row.dataset_name !== 'minist'"
+              v-if="scope.row.dataset_name !== 'mnist'"
               style="font-size: 10px;padding: 5px 10px;" type="dashed" @click="deletedataset(scope.row.dataset_id)"><p style="font-size: 10px;color: rgb(15, 15, 15);">删除</p></el-button>
           </template>
         </el-table-column>
