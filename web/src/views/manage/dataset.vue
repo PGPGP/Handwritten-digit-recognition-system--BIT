@@ -1,4 +1,3 @@
-
 <template>
 
   <div class="app-container">
@@ -43,7 +42,7 @@
             <!-- <i class="el-icon-time" />
             <span>{{ scope.row.display_time }}</span> -->
             <el-button 
-              v-if="scope.row.dataset_name !== 'mnist'"
+              v-if="scope.row.dataset_name !== 'minist'"
               style="font-size: 10px;padding: 5px 10px;" type="dashed" @click="deletedataset(scope.row.dataset_id)"><p style="font-size: 10px;color: rgb(15, 15, 15);">删除</p></el-button>
           </template>
         </el-table-column>
@@ -61,11 +60,10 @@
               action="#"
               :on-remove="fileRemove"
               :on-change="fileChang"
-              accept=""
+              
               :auto-upload="false"
               :multiple="true"
               :file-list="form.instFilePics"
-              
               ref="uploadFile">
               <el-button size="small" type="primary" >
                 <i class="el-icon-folder-opened"></i>
@@ -97,17 +95,11 @@
                   </div>
               </div>
             </div>
-          </div>
-              
-
+          </div>              
         </el-form-item>
-
         <el-form-item>
           <el-button type="primary" @click="startLabeling">打标签</el-button>
         </el-form-item>
-
-
-
         <el-form-item label="数据集命名">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -134,15 +126,15 @@ import users from '@/store/users/users.vue'
 
 export default {
 
-  watch: {
-        'form.instFilePics': {
-        handler(newVal) {
-            // 当 instFilePics 变化时，更新 uploadingImages
-            this.uploadingImages = newVal.map(file => ({ image: file.raw, label: null }));
-        },
-        deep: true,
-        },
-    },
+  // watch: {
+  //       'form.instFilePics': {
+  //       handler(newVal) {
+  //           // 当 instFilePics 变化时，更新 uploadingImages
+  //           this.uploadingImages = newVal.map(file => ({ image: file.raw, label: null }));
+  //       },
+  //       deep: true,
+  //       },
+  //   },
 
   data() {
     return {
@@ -182,11 +174,10 @@ export default {
 
   mounted() {
 	this.$refs.uploadFile.$children[0].$refs.input.webkitdirectory = true;
-  console.log('hhhhh');
+  // console.log('hhhhh');
   },
 
   methods: {
-
     formatDate(date) {
       const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
       return new Date(date).toLocaleDateString('zh-CN', options);
@@ -222,7 +213,7 @@ export default {
     //此处应为数据集列表数据
     fetchData() {
       this.listLoading = true;
-      axios.post('http://192.168.43.254:8080/request/dataset')
+      axios.post('http://localhost:8081/request/dataset')
         .then(response => {
           this.list = response.data.datasets;
         })
@@ -282,7 +273,7 @@ export default {
         this.$message('数据集已提交!');
 
         // 发送 POST 请求
-        axios.post("http://192.168.43.254:8080/manage/upload_dataset", formData, {
+        axios.post("http://localhost:8081/manage/upload_dataset", formData, {
             headers: {
             'Content-Type': 'multipart/form-data', // 设置请求头
             }
@@ -311,7 +302,7 @@ export default {
       
       this.$message('删除请求已提交!')
 
-      axios.post("http://192.168.43.254:8080/manage/delete_dataset",formData,{
+      axios.post("http://localhost:8081/manage/delete_dataset",formData,{
         headers: {
             'Content-Type': 'multipart/form-data', // 设置请求头
         }
@@ -342,18 +333,22 @@ export default {
 
         // 处理上传的文件夹中的图片
         const images = [];
-        const allowedTypes = ['image/jpeg', 'image/png']; // 可接受的图片类型
-
+        const allowedTypes = ['image/jpeg', 'image/png','image/jpg']; // 可接受的图片类型
         for (const file of fileList) {
             if (file.raw && allowedTypes.includes(file.raw.type)) {
             images.push({ image: file.raw, label: null });
             } else {
             // 处理非法文件类型，比如给用户提示
-            console.warn(`Invalid file type: ${file.raw.type}`);
+            this.$message.error('只能上传图片文件')
+            this.form.instFilePics = []
+            this.uploadingImages = []
+            return false
             }
         }
-
         this.uploadingImages = images;
+        return true
+
+        
     },
 
 
@@ -368,26 +363,27 @@ export default {
     deleteImage() {
       if (this.form.instFilePics[this.currentImageIndex] !== null) {
         this.form.instFilePics.splice(this.currentImageIndex, 1);
+        this.uploadingImages.splice(this.currentImageIndex, 1);
+        if (this.currentImageIndex > 0) {
+            this.currentImageIndex--;
+            const existingLabel = this.uploadingImages[this.currentImageIndex].label;
+            console.log("index:"+this.currentImageIndex)
+            console.log(existingLabel)
+            if (existingLabel !== null) {
+              this.selectedNumber = existingLabel;
+            }
+            else{
+              this.selectedNumber = null;
+            }
+          this.labeling = true;
+        } else if (this.uploadingImages.length > 0) {
+          this.labeling = true;
+        } else {
+          this.labeling = false;
+        }
 
-        this.$nextTick(() => {
-          if (this.currentImageIndex > 0) {
-              this.currentImageIndex--;
-              const existingLabel = this.uploadingImages[this.currentImageIndex].label;
-              if (existingLabel !== null) {
-                this.selectedNumber = existingLabel;
-              }
-              else{
-                this.selectedNumber = null;
-              }
-            this.labeling = true;
-          } else if (this.uploadingImages.length > 0) {
-            this.labeling = true;
-          } else {
-            this.labeling = false;
-          }
+        // console.log('Deleted Image Index:', this.currentImageIndex);
 
-          // console.log('Deleted Image Index:', this.currentImageIndex);
-        });
       } else {
         this.labeling = false;
       }
