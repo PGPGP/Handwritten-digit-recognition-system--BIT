@@ -78,6 +78,7 @@
       :show-close="false"
       center>
       <div id="main" style="width: 100%; height: 500px; background:#fff"></div>
+      <div id="main2" style="width: 100%; height: 500px; background:#fff"></div>
       <span>训练过程中不能操作其他界面，除非您希望强制中止训练</span>
       <span slot="footer" class="dialog-footer">
         <el-button v-if="diagFlag == false" type="primary" @click="train_stop">中止训练</el-button>
@@ -158,6 +159,7 @@ export default {
           object: null
         },
         charts: '',
+        charts2: '',
         trainLossData: [],
         trainAccData: [],
         testLossData: [],
@@ -274,6 +276,7 @@ export default {
         this.trainFlag = !this.trainFlag
         this.centerDialogVisible = false
         this.charts.dispose()
+        this.charts2.dispose()
       },
       train_stop(){
         this.stop.user_id = this.user.user_id
@@ -287,6 +290,7 @@ export default {
         this.testLossData = []
         this.testAccData = []
         this.charts.dispose()
+        this.charts2.dispose()
         alert('训练中止')
       },
       init() {
@@ -318,17 +322,21 @@ export default {
             this.trainAccData.push(info.object.train_acc)
             this.testLossData.push(info.object.test_loss)
             this.testAccData.push(info.object.test_acc)
-            if(this.drawnum % 20 == 0){
-              this.drawLine('main')
-              this.drawnum = 1
-            }              
-            else
-              this.drawnum++
+            // if(this.drawnum % 20 == 0){
+            //   this.drawLine('main')
+            //   this.drawLine2('main2')
+            //   this.drawnum = 1
+            // }              
+            // else
+            //   this.drawnum++
+            this.drawLine('main')
+            this.drawLine2('main2')
             break
           case "finish":
             //this.$msgbox.close()
             //this.centerDialogVisible = false
             this.drawLine('main')
+            this.drawLine2('main2')
             this.xData = []
             this.trainLossData = []
             this.trainAccData = []
@@ -346,16 +354,16 @@ export default {
       consumeMessage(info) {
         //拿到最新数据重新渲染界面
       },
-      drawLine(id) {
-        if(this.charts != '')
-          this.charts.dispose()
-        this.charts = echarts.init(document.getElementById(id))
-        this.charts.clear()
-        this.charts.setOption({
+      drawLine2(id) {
+        if(this.charts2 != '')
+          this.charts2.dispose()
+        this.charts2 = echarts.init(document.getElementById(id))
+        this.charts2.clear()
+        this.charts2.setOption({
           title:{
             left: '3%',
             top: '5%',
-            text:'训练情况'
+            text:'训练情况_acc'
           },
           tooltip:{
             trigger: 'axis'
@@ -364,7 +372,7 @@ export default {
             align: 'right',
             left:'3%',
             top: '15%',
-            data: ['train_loss', 'train_acc', 'test_loss', 'test_acc']
+            data: ['train_acc', 'test_acc']
           },
           grid:{
             top:'30%',
@@ -388,114 +396,163 @@ export default {
           },
           yAxis:{
             type: 'value',
+            //boundaryGap:true,
+            //splitNumber:26, //有几个纵坐标
+            //interval:5 //坐标间隔
+          },
+          series:[{
+            name:'train_acc',
+            type:'line',
+            // stack:'?',//不知道是干什么的
+            // areaStyle:{
+            //   color:{
+            //     type:'linear',
+            //     x:0,
+            //     y:0,
+            //     x2:0,
+            //     y2:0,
+            //     colorStops:[{
+            //       offset:0,color:'rgb(212,199,255)'//0%处的颜色
+            //     },{
+            //       offset:1,color:'#ffffff'//100%处的颜色
+            //     }],
+            //     global:false
+            //   }
+            // },
+            // itemStyle:{
+            //   color: 'rgb(233,199,255)',//改变折线点的颜色
+            //   lineStyle:{
+            //     color:'rgb(233,199,255)'//改变折线颜色
+            //   }
+            // },
+            data: this.trainAccData
+          },{
+            name:'test_acc',
+            type:'line',
+            // stack:'?',//不知道是干什么的
+            // areaStyle:{
+            //   color:{
+            //     type:'linear',
+            //     x:0,
+            //     y:0,
+            //     x2:0,
+            //     y2:0,
+            //     colorStops:[{
+            //       offset:0,color:'rgb(255,212,199)'//0%处的颜色
+            //     },{
+            //       offset:1,color:'#ffffff'//100%处的颜色
+            //     }],
+            //     global:false
+            //   }
+            // },
+            // itemStyle:{
+            //   color: 'rgb(255,199,199)',//改变折线点的颜色
+            //   lineStyle:{
+            //     color:'rgb(255,199,199)'//改变折线颜色
+            //   }
+            // },
+            data: this.testAccData
+          }]
+        })
+      },
+      drawLine(id) {
+        if(this.charts != '')
+          this.charts.dispose()
+        this.charts = echarts.init(document.getElementById(id))
+        this.charts.clear()
+        this.charts.setOption({
+          title:{
+            left: '3%',
+            top: '5%',
+            text:'训练情况_loss'
+          },
+          tooltip:{
+            trigger: 'axis'
+          },
+          legend: {
+            align: 'right',
+            left:'3%',
+            top: '15%',
+            data: ['train_loss', 'test_loss']
+          },
+          grid:{
+            top:'30%',
+            left:'5%',
+            right:'5%',
+            bottom:'5%',
+            containLabel: true
+          },
+          toolbox: {
+            feature:{
+              saveAsImage: {}//保存为图片？？？这要填什么，地址吗？
+            }
+          },
+          xAxis:{
+            type: 'category',
             boundaryGap:true,
-            splitNumber:26, //有几个纵坐标
-            interval:5 //坐标间隔
+            axisTick:{
+              alignWithLabel:true//刻度线和标签对齐
+            },
+            data:this.xData
+          },
+          yAxis:{
+            type: 'value',
+            //boundaryGap:true,
+            //splitNumber:26, //有几个纵坐标
+            //interval:0.5 //坐标间隔
           },
           series:[{
             name:'train_loss',
             type:'line',
-            stack:'?',//不知道是干什么的
-            areaStyle:{
-              color:{
-                type:'linear',
-                x:0,
-                y:0,
-                x2:0,
-                y2:0,
-                colorStops:[{
-                  offset:0,color:'rgb(255,200,213)'//0%处的颜色
-                },{
-                  offset:1,color:'#ffffff'//100%处的颜色
-                }],
-                global:false
-              }
-            },
-            itemStyle:{
-              color: 'rgb(255,96,64)',//改变折线点的颜色
-              lineStyle:{
-                color:'rgb(255,96,64)'//改变折线颜色
-              }
-            },
+            // stack:'?',//不知道是干什么的
+            // areaStyle:{
+            //   color:{
+            //     type:'linear',
+            //     x:0,
+            //     y:0,
+            //     x2:0,
+            //     y2:0,
+            //     colorStops:[{
+            //       offset:0,color:'rgb(255,200,213)'//0%处的颜色
+            //     },{
+            //       offset:1,color:'#ffffff'//100%处的颜色
+            //     }],
+            //     global:false
+            //   }
+            // },
+            // itemStyle:{
+            //   color: 'rgb(255,96,64)',//改变折线点的颜色
+            //   lineStyle:{
+            //     color:'rgb(255,96,64)'//改变折线颜色
+            //   }
+            // },
             data: this.trainLossData
-          },{
-            name:'train_acc',
-            type:'line',
-            stack:'?',//不知道是干什么的
-            areaStyle:{
-              color:{
-                type:'linear',
-                x:0,
-                y:0,
-                x2:0,
-                y2:0,
-                colorStops:[{
-                  offset:0,color:'rgb(212,199,255)'//0%处的颜色
-                },{
-                  offset:1,color:'#ffffff'//100%处的颜色
-                }],
-                global:false
-              }
-            },
-            itemStyle:{
-              color: 'rgb(233,199,255)',//改变折线点的颜色
-              lineStyle:{
-                color:'rgb(233,199,255)'//改变折线颜色
-              }
-            },
-            data: this.trainAccData
           },{
             name:'test_loss',
             type:'line',
-            stack:'?',//不知道是干什么的
-            areaStyle:{
-              color:{
-                type:'linear',
-                x:0,
-                y:0,
-                x2:0,
-                y2:0,
-                colorStops:[{
-                  offset:0,color:'rgb(199,255,220)'//0%处的颜色
-                },{
-                  offset:1,color:'#ffffff'//100%处的颜色
-                }],
-                global:false
-              }
-            },
-            itemStyle:{
-              color: 'rgb(199,255,241)',//改变折线点的颜色
-              lineStyle:{
-                color:'rgb(199,255,241)'//改变折线颜色
-              }
-            },
+            // stack:'?',//不知道是干什么的
+            // areaStyle:{
+            //   color:{
+            //     type:'linear',
+            //     x:0,
+            //     y:0,
+            //     x2:0,
+            //     y2:0,
+            //     colorStops:[{
+            //       offset:0,color:'rgb(199,255,220)'//0%处的颜色
+            //     },{
+            //       offset:1,color:'#ffffff'//100%处的颜色
+            //     }],
+            //     global:false
+            //   }
+            // },
+            // itemStyle:{
+            //   color: 'rgb(199,255,241)',//改变折线点的颜色
+            //   lineStyle:{
+            //     color:'rgb(199,255,241)'//改变折线颜色
+            //   }
+            // },
             data: this.testLossData
-          },{
-            name:'test_acc',
-            type:'line',
-            stack:'?',//不知道是干什么的
-            areaStyle:{
-              color:{
-                type:'linear',
-                x:0,
-                y:0,
-                x2:0,
-                y2:0,
-                colorStops:[{
-                  offset:0,color:'rgb(255,212,199)'//0%处的颜色
-                },{
-                  offset:1,color:'#ffffff'//100%处的颜色
-                }],
-                global:false
-              }
-            },
-            itemStyle:{
-              color: 'rgb(255,199,199)',//改变折线点的颜色
-              lineStyle:{
-                color:'rgb(255,199,199)'//改变折线颜色
-              }
-            },
-            data: this.testAccData
           }]
         })
       }
