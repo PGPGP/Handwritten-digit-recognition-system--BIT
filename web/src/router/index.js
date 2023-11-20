@@ -88,13 +88,13 @@ export const constantRoutes = [
         path: 'train',
         name: 'train',
         component: () => import('@/views/manage/train'),
-        meta: { title: '训练模型', icon: 'tree' }
+        meta: { title: '训练模型', icon: 'train' }
       },
       {
         path: 'applicate',
         name: 'applicate',
         component: () => import('@/views/manage/applicate'),
-        meta: { title: '应用模型', icon: 'tree' }
+        meta: { title: '应用模型', icon: 'applicate' }
       }
     ]
   },
@@ -107,7 +107,7 @@ export const constantRoutes = [
         path: 'recognition',
         name: 'recognition',
         component: () => import('@/views/recognition/recognition'),
-        meta: { title: '手写数字识别', icon: 'form' }
+        meta: { title: '手写数字识别', icon: 'predict' }
       }
     ]
   },
@@ -120,7 +120,7 @@ export const constantRoutes = [
         path: 'statistics',
         name: 'statistics',
         component: () => import('@/views/statistics/statistics'),
-        meta: { title: '数据统计', icon: 'form' }
+        meta: { title: '数据统计', icon: 'statistics' }
       }
     ]
   },
