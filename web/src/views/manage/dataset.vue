@@ -35,14 +35,16 @@
         </el-table-column>
         <el-table-column label="创建日期"  align="center" >
           <template v-slot="scope">
-            {{ scope.row.dataset_create_date }}
+            {{ formatDate(scope.row.dataset_create_date )}}
           </template>
         </el-table-column>
         <el-table-column align="center" prop="created_at" label="操作" width="100">
           <template v-slot="scope"> 
             <!-- <i class="el-icon-time" />
             <span>{{ scope.row.display_time }}</span> -->
-            <el-button style="font-size: 10px;padding: 5px 10px;" type="dashed" @click="deletedataset(scope.row.dataset_id)"><p style="font-size: 10px;color: rgb(15, 15, 15);">删除</p></el-button>
+            <el-button 
+              v-if="scope.row.dataset_name !== 'mnist'"
+              style="font-size: 10px;padding: 5px 10px;" type="dashed" @click="deletedataset(scope.row.dataset_id)"><p style="font-size: 10px;color: rgb(15, 15, 15);">删除</p></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -63,6 +65,7 @@
               :auto-upload="false"
               :multiple="true"
               :file-list="form.instFilePics"
+              
               ref="uploadFile">
               <el-button size="small" type="primary" >
                 <i class="el-icon-folder-opened"></i>
@@ -81,14 +84,16 @@
                     v-for="num in 10"
                     :key="num"
                     class="number-option"
-                    @click="selectNumber(num)"
-                    :class="{ selected: selectedNumber === num }"
+                    @click="selectNumber(num-1)"
+                    :class="{ selected: selectedNumber === num-1 }"
                   >
-                    {{ num }}
+                    {{ num-1 }}
                   </div>
                   <div class="buttons">
-                  <button @click="deleteImage">删除</button>
-                  <button @click="confirmSelection" :disabled="selectedNumber === null">确定</button>
+                  <el-button @click="previousImage">上一张</el-button>
+                  <el-button @click="deleteImage">删除</el-button>
+                  <el-button @click="confirmSelection" :disabled="selectedNumber === null">确定</el-button>
+                  <el-button @click="nextImage">下一张</el-button>
                   </div>
               </div>
             </div>
@@ -124,7 +129,7 @@
 
 <script>
 import axios from 'axios'
- 
+import users from '@/store/users/users.vue'
 
 
 export default {
@@ -166,10 +171,9 @@ export default {
       uploadingImages: [], // 保存上传的图片
       currentImageIndex: 0, // 当前处理的图片索引
       labeling: false, // 是否处于标签选择状态
-      user_id:'0',
+      user_id: users.user_id,
       labellist:[],
       imagelist:[]
-
     }
   },
   created() {
@@ -178,13 +182,47 @@ export default {
 
   mounted() {
 	this.$refs.uploadFile.$children[0].$refs.input.webkitdirectory = true;
+  console.log('hhhhh');
   },
 
   methods: {
+
+    formatDate(date) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      return new Date(date).toLocaleDateString('zh-CN', options);
+    },
+
+    previousImage() {
+      if (this.currentImageIndex > 0) {
+        this.currentImageIndex--;
+        this.updateSelectedNumber();
+      }
+    },
+
+    nextImage() {
+      if (this.currentImageIndex < this.uploadingImages.length - 1) {
+        this.currentImageIndex++;
+        this.updateSelectedNumber();
+      }
+    },
+
+    updateSelectedNumber() {
+      const existingLabel = this.uploadingImages[this.currentImageIndex].label;
+      if (existingLabel !== null) {
+        this.selectedNumber = existingLabel;
+      } else {
+        this.selectedNumber = null;
+      }
+      this.$nextTick(() => {
+        this.labeling = true;
+      });
+    },
+
+
     //此处应为数据集列表数据
     fetchData() {
       this.listLoading = true;
-      axios.post('http://localhost:8081/request/dataset')
+      axios.post('http://192.168.43.254:8080/request/dataset')
         .then(response => {
           this.list = response.data.datasets;
         })
@@ -208,8 +246,13 @@ export default {
     confirmSelection() {
       if (this.uploadingImages[this.currentImageIndex] !=null && this.selectedNumber != null) {
         this.currentImageIndex++; // 显示下一张图片
-        
-        this.selectedNumber = null;
+        const existingLabel = this.uploadingImages[this.currentImageIndex].label;
+        if (existingLabel !== null) {
+          this.selectedNumber = existingLabel;
+        }
+        else{
+          this.selectedNumber = null;
+        }
 
         if (this.currentImageIndex < this.uploadingImages.length) {
           // 如果还有图片需要处理，将标签选择状态设置为 true
@@ -239,12 +282,20 @@ export default {
         this.$message('数据集已提交!');
 
         // 发送 POST 请求
-        axios.post("http://localhost:8080/manage/upload_dataset", formData, {
+        axios.post("http://192.168.43.254:8080/manage/upload_dataset", formData, {
             headers: {
             'Content-Type': 'multipart/form-data', // 设置请求头
             }
         }).then(response => {
-            console.log('请求表单数据成功' + response);
+            var resultWebItem = response.data;
+            var result = resultWebItem.result;
+            this.$message(result);
+            this.fetchData();
+            console.log('返回结果：'+result)
+
+            // 清空原始上传的数据
+            location.reload();
+
             // 处理响应数据
         }).catch(error => {
             console.error(error);
@@ -260,7 +311,7 @@ export default {
       
       this.$message('删除请求已提交!')
 
-      axios.post("http://localhost:8081/manage/delete_dataset",formData,{
+      axios.post("http://192.168.43.254:8080/manage/delete_dataset",formData,{
         headers: {
             'Content-Type': 'multipart/form-data', // 设置请求头
         }
@@ -277,6 +328,11 @@ export default {
         console.error(error);
       });
       
+    },
+
+
+    onCancel(){
+      location.reload();
     },
 
 
@@ -309,21 +365,35 @@ export default {
         this.selectLabel(num);
       },
 
-      deleteImage() {
+    deleteImage() {
       if (this.form.instFilePics[this.currentImageIndex] !== null) {
         this.form.instFilePics.splice(this.currentImageIndex, 1);
 
-        if (this.currentImageIndex > 0) {
-          this.currentImageIndex--; // 返回到上一张图片
-          this.labeling = true; // 重新进入标签选择状态
-        } else {
-          this.labeling = false; // 如果已经是第一张图片，退出标签选择状态
-        }
-      }
-      else{
+        this.$nextTick(() => {
+          if (this.currentImageIndex > 0) {
+              this.currentImageIndex--;
+              const existingLabel = this.uploadingImages[this.currentImageIndex].label;
+              if (existingLabel !== null) {
+                this.selectedNumber = existingLabel;
+              }
+              else{
+                this.selectedNumber = null;
+              }
+            this.labeling = true;
+          } else if (this.uploadingImages.length > 0) {
+            this.labeling = true;
+          } else {
+            this.labeling = false;
+          }
+
+          // console.log('Deleted Image Index:', this.currentImageIndex);
+        });
+      } else {
         this.labeling = false;
       }
     },
+   
+
       getImageUrl() {
       const currentImage = this.uploadingImages[this.currentImageIndex];
       if (currentImage && currentImage.image instanceof Blob) {
