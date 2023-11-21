@@ -181,41 +181,21 @@ export default {
         return new Date(date).toLocaleDateString('zh-CN', options);
       },
       changeStatus() {
-        // for(const i in this.options){
-        //   if(this.options[i].model_name == this.value){
-        //     id = this.
-        //   }
-        // }
         if(this.value == ''){
           alert('模型不能为空')
           return
         }
         const formData = new FormData()
         formData.append('model_id', this.value)
-        console.log(this.value)
         axios.post("http://192.168.43.254:8080/manage/switch_model",formData,{headers:{'Content-Type':'multipart/form-data'}}).then((response) => {
           if(response.data.result == "successful"){
-            // for(const i in this.tableData){
-            //   this.tableData[i].is_active = 0
-            // }
-            // for(const i in this.tableData){
-            //   if(this.tableData[i].model_id == this.value){
-            //     this.tableData[i].is_active = 1
-            //     this.input_model = this.tableData[i].model_name
-            //     this.input_time = this.tableData[i].model_activate_date
-            //     break
-            //   }
-            // }
             axios.post("http://192.168.43.254:8080/request/model").then((response) => {
-              console.log('请求表单数据成功'+response)
-              //this.options = response.options
               if(response != null){
                 this.options = response.data.models
                 this.tableData = response.data.models
                 for(const i in this.tableData){
                   this.tableData[i].model_create_date = this.formatDate(this.tableData[i].model_create_date)
                 }
-                console.log(response)
               }
           
               this.fresh()
@@ -229,7 +209,6 @@ export default {
       fresh(){
         for(const i in this.tableData){
           if(this.tableData[i].is_active == 1){
-            console.log('this.tableData[i]')//尽管成功匹配了，值并没有得到修改，需要等待讨论
             this.input_model = this.tableData[i].model_name
             this.input_time = this.formatDate(this.tableData[i].model_activate_date)
             let year = new Date().getFullYear(); //获取当前时间的年份
@@ -237,15 +216,12 @@ export default {
             let day = new Date().getDate(); //获取当前时间的天数
             let date = this.input_time.substr(0,10)
             let nowDate = year + '-' + month + '-' + day
-            console.log(nowDate)
-            console.log(date)
             let dateSpan, iDays
 	          let sDate1 = Date.parse(date)
 	          let sDate2 = Date.parse(nowDate)
             dateSpan = sDate2 - sDate1
 	          dateSpan = Math.abs(dateSpan)
 	          iDays = Math.floor(dateSpan / (24 * 3600 * 1000))
-            console.log(iDays)
             this.input_span = iDays
             break
           }
@@ -253,24 +229,20 @@ export default {
       }
     },
     created:function(){
-      console.log('应用被创建')
       axios.post("http://192.168.43.254:8080/request/model").then((response) => {
-        console.log('请求表单数据成功'+response)
-        //this.options = response.options
         if(response != null){
           this.options = response.data.models
           this.tableData = response.data.models
           for(const i in this.tableData){
             this.tableData[i].model_create_date = this.formatDate(this.tableData[i].model_create_date)
           }
-          console.log(response)
         }
         
         this.fresh()
       })
     },
     mounted:function(){
-      console.log('应用被挂载')
+
     }
 }
 </script>
