@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">name: {{ user_name }}</div>
 
     <div :style="styleOfWel">欢迎使用手写数字识别管理系统</div>
   </div>
