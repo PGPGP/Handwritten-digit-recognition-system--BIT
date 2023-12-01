@@ -1,0 +1,14 @@
+<!--pages/signature/signature.wxml-->
+<canvas 
+    type="2d" 
+    id="canvas" 
+    bindtouchmove="move" 
+    bindtouchstart="start"  
+    binderror="error" 
+    style="width:{{width}}px;height:{{height}}px;">
+</canvas>
+<view class="btn">
+  <button bindtap="clearClick">清除</button>
+  <button bindtap="next_calculator" style="color: #F1C37F; background-color: white">返回</button>
+  <button bindtap="saveClick">开始识别</button>
+</view>

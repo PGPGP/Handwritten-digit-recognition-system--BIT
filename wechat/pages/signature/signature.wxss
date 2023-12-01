@@ -1,0 +1,31 @@
+/* pages/signature/signature.wxss */
+page {
+  /*background-color: #e9f2f1;*/
+  background-color: #FFEBCD;
+}
+.btn {
+  display: flex;
+  flex-direction: row;
+  justify-self: baseline;
+  margin: 15rpx;
+
+}
+.btn button:first-child {
+  /*color: #3fa89a;*/
+  color:#F1C37F;
+ 
+}
+
+.btn button:last-child {
+  color: white;
+  /*background-color: #FFEBCD;*/
+  background-color:#e4cc87;
+}
+button {
+  width: 200rpx;
+  border-radius: 5rpx;
+  box-shadow: 0px 0px 1px 1px #c5c5c5;
+}
+canvas {
+  background-color: white;
+}

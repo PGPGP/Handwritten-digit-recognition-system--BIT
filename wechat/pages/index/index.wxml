@@ -1,0 +1,25 @@
+<!--index.wxml-->
+<image class="bg" src="/images/星空.jpg"></image>
+<view style="width: 750rpx; height: 800rpx">
+  <view style="font-size: 55rpx; color: white; width: 450rpx; position: relative; left: 21%; top: 25%">
+  手写数字识别系统
+  <image src="{{imgSrc}}" class="showImg" style="position: relative; left: -7%; top: 0%; width: 514rpx; height: 495rpx; display: inline-block; box-sizing: border-box"></image>
+  </view>
+  
+</view>
+
+<view style="width: 750rpx; height: 381rpx; display: block; box-sizing: border-box" >
+<view  bindtap='loadImage' style="width: 183rpx; height: 183rpx; display: block; box-sizing: border-box; position: relative; left: 15%; top: 0%">
+  <view class="iconfont icon-paishe" style="width: 50rpx; height: 50rpx; color: white; top: 15%; left: 35%; position: relative"></view>
+  <button class="btn1" plain="true" style="width: 183rpx; height: 183rpx; display: flex; box-sizing: border-box; left: 0rpx; top: -49rpx; color: white; border-color: burlywood; position: relative">本地上传</button>
+</view>
+<view bindtap='identify' style="width: 183rpx; height: 183rpx; left: 60%; position: relative; top: -49%">
+  <view class="iconfont icon-saomiaoshibie380" style="width: 54rpx; height: 45rpx; color: white; top: -13%; left: 37%; position: relative; display: block; box-sizing: border-box"></view>
+  <button class="btn2" plain="true" style="color: white; width: 183rpx; height: 183rpx; display: flex; box-sizing: border-box; left: 0rpx; top: -50rpx; position: relative; border-color: burlywood">开始识别</button>
+</view>
+<view bindtap='next_calculator' style="width: 280rpx; position: relative; left: 32%; top: -40%; height: 100rpx; display: block; box-sizing: border-box">
+  <view class="iconfont icon-bi" style="color: white; height: 40rpx; width: 40rpx; position: relative; left: 8%; top: -16%"></view>
+  <button  plain="true" style="left: 0rpx; top: -50rpx; position: relative; border-radius: 3px; color: white; border-color: burlywood; width: 280rpx; height: 100rpx">手写输入</button>
+</view>
+</view>
+ 
