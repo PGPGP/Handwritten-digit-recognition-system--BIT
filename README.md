@@ -13,9 +13,9 @@ BIT20级卓工训练项目——基于minist数据集的手写数字识别系统
 ## pyproject文件夹为Python端：
   下载requirement.txt文件后，在放置该文件的目录下用命令行输入pip install -r requirement.txt，安装第三方库  
   
-  http_server.py 包括了预测，组建数据集以及训切换模型  
+  http_server.py 包括了预测，组建数据集以及训切换模型，端口：8088
   
-  websocket_server.py 主要为训练模型和暂停训练  
+  websocket_server.py 主要为训练模型和暂停训练，端口：8089
 
 ## javaproject文件夹为Java端：
   web端口：8080
